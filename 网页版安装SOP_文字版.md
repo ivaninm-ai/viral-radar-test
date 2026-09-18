@@ -33,7 +33,7 @@
 1. supabase.com → New project(Region 选 Singapore,数据库密码自己存好)
 2. 左边点 SQL Editor → New query
 3. 回到 GitHub 你的仓库,点开 `schema.sql` → 右上角「Copy raw file」(两个小方块的图标),整段复制,贴进 SQL Editor
-4. 只改最底下的 `example_account_1/2/3`,换成你的竞对 IG 账号名(只要账号名,不要 @,不要链接;要几个加几行)。上面一个字都别动
+4. **全篇只改最底下那 5 行**的 `换成竞对1`…`换成竞对5`,换成你要追踪的竞对 IG 账号名(只要账号名,不要 @,不要链接;想多加就复制一行改账号名,建议 8-15 个)。上面一个字都别动
 5. 点 Run,看到 Success
 6. 左边点 Table Editor,确认 posts 和 competitors 两张表都在,competitors 里是你填的竞对
 
