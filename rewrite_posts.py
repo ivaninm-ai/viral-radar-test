@@ -21,6 +21,7 @@ Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY | ANTHROPIC_API_KEY
 
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -45,11 +46,19 @@ BRAND_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "brand_voi
 
 def load_brand():
     try:
-        txt = open(BRAND_PATH, encoding="utf-8").read().strip()
-        if txt:
-            return txt
+        txt = open(BRAND_PATH, encoding="utf-8").read()
     except Exception:
-        pass
+        txt = ""
+    txt = re.sub(r"<!--.*?-->", "", txt, flags=re.S)  # 示例只给人看,不喂给 AI
+    m = re.search(r"^## ", txt, flags=re.M)
+    if m:
+        txt = txt[m.start():]                          # 开头的「怎么改」说明也不喂
+    if "__NICHE__" in txt:
+        print(f"brand_voice.md 还没改,先按 NICHE=「{NICHE}」套通用人设。"
+              "改好文件后跑 Actions → Rewrite To My Voice(rewrite_all=1)整批重刷。")
+    txt = txt.replace("__NICHE__", NICHE).strip()
+    if txt:
+        return txt
     return (f"你是一名做「{NICHE}」的短视频口播创作者。"
             "语气真诚、有画面、有落地步骤,不夸大、不承诺结果。不用 emoji、不用破折号。")
 
@@ -65,7 +74,7 @@ def build_system():
         "3. 全程用【人设与规矩】的语气,红线一条都不能碰\n"
         "4. 长度约 30-60 秒口播,开头第一句就是强钩子,结尾一句软性行动指引\n"
         "5. 直接输出脚本正文本身,不要任何解释、标题、前后缀,不要写「以下是」或「脚本:」\n\n"
-        "【人设与规矩】\n" + load_brand()
+        f"【人设与规矩】(所在领域:{NICHE})\n" + load_brand()
     )
 
 
