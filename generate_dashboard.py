@@ -78,6 +78,7 @@ def normalize(r):
         "caption": caption,
         "transcript": tr if tr not in ("(转录失败)", "(视频不可用)", "(无口播内容)") else "",
         "brk": "" if brk.strip() == "(拆解失败)" else brk[:600],
+        "my": "" if (r.get("my_script") or "").strip() == "(改写失败)" else (r.get("my_script") or "")[:4000],
         "tags": r.get("hashtags") or "",
         "bait": bool(BAIT_RE.search(caption)),
         "type": r.get("post_type") or "",
@@ -255,6 +256,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     padding: 8px 11px; border-radius: 0 10px 10px 0; font-size: 12px; line-height: 1.65;
     color: var(--muted); }
   .ai b { color: var(--orange); font-weight: 600; }
+  .mine { border-left: 2px solid var(--green); background: rgba(63,214,143,.06);
+    padding: 8px 11px; border-radius: 0 10px 10px 0; font-size: 12px; line-height: 1.65;
+    color: var(--muted); cursor: pointer; display: -webkit-box; -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+  .mine.open { -webkit-line-clamp: unset; }
+  .mine b { color: var(--green); font-weight: 600; }
 
   .srow { display: flex; align-items: center; gap: 7px; }
   .srow label { font-size: 12px; color: var(--faint); }
@@ -512,10 +519,12 @@ function card(d, idx) {
       </div>
       <div class="cap" onclick="this.classList.toggle('open')"></div>
       ${d.brk ? '<div class="ai" onclick="this.classList.toggle(&quot;open&quot;)"></div>' : ''}
+      ${d.my ? '<div class="mine" onclick="this.classList.toggle(&quot;open&quot;)"></div>' : ''}
       <div class="srow"><label>状态</label><select class="status btn s${d.status}"></select>
         <button class="abtn copy" title="复制完整文案">${I('copy')}文案</button>
         ${tr ? '<button class="abtn mic" title="复制视频口播逐字稿">' + I('mic') + '口播</button>' : ''}
-        <button class="abtn brief" title="复制拍摄 Brief(数据+Hook+文案+口播稿)">${I('clip')}Brief</button>
+        ${d.my ? '<button class="abtn minec" title="复制我的改写口播稿(可直接拍)">' + I('mic') + '我的稿</button>' : ''}
+        <button class="abtn brief" title="复制拍摄 Brief(数据+Hook+AI拆解+我的稿+口播稿+文案)">${I('clip')}Brief</button>
         <a class="abtn" href="${d.url}" target="_blank" title="打开 Instagram 原帖">${I('ext')}</a></div>
     </div>`;
   const capEl = el.querySelector('.cap');
@@ -523,6 +532,8 @@ function card(d, idx) {
   capEl.innerHTML = hook ? '<b>' + esc(hook) + '</b>' + (restTxt ? '<br>' + esc(restTxt).replace(/\\n/g, '<br>') : '') : '';
   const aiEl = el.querySelector('.ai');
   if (aiEl) aiEl.innerHTML = '<b>💡 AI 拆解</b><br>' + esc(d.brk).split(String.fromCharCode(10)).join('<br>');
+  const myEl = el.querySelector('.mine');
+  if (myEl) myEl.innerHTML = '<b>🎬 我的版本(可直接拍)</b><br>' + esc(d.my).split(String.fromCharCode(10)).join('<br>');
   const sel = el.querySelector('.status');
   STATUSES.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
   sel.value = d.status;
@@ -532,6 +543,9 @@ function card(d, idx) {
   const micBtn = el.querySelector('.mic');
   if (micBtn) micBtn.onclick = () =>
     navigator.clipboard.writeText(tr).then(() => toast('✓ 口播稿已复制', true));
+  const mineBtn = el.querySelector('.minec');
+  if (mineBtn) mineBtn.onclick = () =>
+    navigator.clipboard.writeText(d.my).then(() => toast('✓ 我的改写稿已复制', true));
   el.querySelector('.brief').onclick = () => {
     const NL = String.fromCharCode(10);
     const parts = ['🎬 爆款参考 @' + d.competitor + ((d.x || 0) >= 2 ? '(自家平均 ×' + d.x + ')' : ''),
@@ -539,7 +553,8 @@ function card(d, idx) {
       ' | 💬 ' + fmt(d.comments) + ' | 👥 ' + fmt(d.followers) + (ago ? ' | ' + ago : ''),
       '🔗 ' + d.url, '✍️ Hook: ' + hook];
     if (d.brk) parts.push('——— AI 拆解 ———', d.brk);
-    if (tr) parts.push('——— 口播稿 ———', tr);
+    if (d.my) parts.push('——— 我的版本(可直接拍)———', d.my);
+    if (tr) parts.push('——— 竞对原口播稿 ———', tr);
     parts.push('——— 完整文案 ———', d.caption || '');
     navigator.clipboard.writeText(parts.join(NL)).then(() => toast('✓ Brief 已复制,可直接发给拍摄/剪辑', true));
   };
