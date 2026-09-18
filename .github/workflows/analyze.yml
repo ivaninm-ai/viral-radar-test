@@ -23,6 +23,18 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # 可选,没设就用免费的 GitHub Models
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NICHE: ${{ vars.NICHE }}
         run: python analyze_posts.py
+      # 「我的稿」:按 brand_voice.md 把新帖改写成自己语气的口播稿。
+      # 这是加分项,失败(比如额度用完)也不能挡住后面的网页生成,所以 continue-on-error。
+      - name: Rewrite to my voice (new posts only)
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NICHE: ${{ vars.NICHE }}
+        run: python rewrite_posts.py

@@ -2,7 +2,7 @@ name: Deploy Dashboard
 
 on:
   workflow_run:
-    workflows: ["Analyze Posts"]
+    workflows: ["Analyze Posts", "Rewrite To My Voice"]
     types: [completed]
   schedule:
     # 兜底:万一上游链条断了,每周一 16:00 大马时间(UTC 08:00)也重建一次
