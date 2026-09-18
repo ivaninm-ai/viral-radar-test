@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>工作台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0d13; --card:#11151d; --card-hi:#151a24; --border:#1d2430; --border-hi:#2c3546;
+    --text:#e8ecf3; --muted:#8a94a6; --faint:#5b6577; --accent:#5ea1ff; --green:#3fd68f;
+    --orange:#f0a33f; --pink:#ff6b9d; --red:#ff5c5c; --fire1:#ff8a3d; --fire2:#ff4d6d;
+    --font:'Inter',-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+    --disp:'Space Grotesk','Inter','PingFang SC','Microsoft YaHei',sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font); -webkit-font-smoothing:antialiased; }
+  ::selection { background:rgba(94,161,255,.3); }
+  ::-webkit-scrollbar { width:10px; } ::-webkit-scrollbar-thumb { background:#232c3b; border-radius:8px; }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:6px; }
+  .ic { width:14px; height:14px; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; fill:none; flex:none; }
+
+  header { position:sticky; top:0; z-index:50; background:rgba(10,13,19,.86);
+    backdrop-filter:blur(14px); border-bottom:1px solid var(--border); padding:13px 20px; }
+  .hrow { display:flex; flex-wrap:wrap; gap:10px; align-items:center; max-width:1200px; margin:0 auto; }
+  .brand { display:flex; align-items:center; gap:10px; margin-right:auto; }
+  .mark { width:31px; height:31px; border-radius:9px; display:grid; place-items:center;
+    background:linear-gradient(135deg,var(--fire1),var(--fire2)); box-shadow:0 4px 16px rgba(255,92,80,.35); }
+  .mark .ic { width:17px; height:17px; color:#fff; }
+  h1 { font-family:var(--disp); font-size:16.5px; font-weight:700; line-height:1.15; }
+  h1 small { display:block; color:var(--faint); font-family:var(--font); font-weight:400; font-size:10.5px; }
+  .me { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); cursor:pointer;
+    background:var(--card); border:1px solid var(--border); border-radius:10px; padding:7px 12px;
+    transition:border-color .18s; }
+  .me:hover { border-color:var(--border-hi); }
+  .me b { color:var(--text); }
+
+  nav { display:flex; gap:7px; max-width:1200px; margin:12px auto 0; flex-wrap:wrap; }
+  .ntab { display:inline-flex; align-items:center; gap:7px; background:var(--card);
+    border:1px solid var(--border); border-radius:999px; padding:7px 16px; font-size:13.5px;
+    color:var(--muted); cursor:pointer; user-select:none; transition:all .18s; }
+  .ntab:hover { border-color:var(--border-hi); color:var(--text); }
+  .ntab.on { color:var(--text); background:linear-gradient(135deg,rgba(255,138,61,.15),rgba(255,77,109,.15));
+    border-color:rgba(255,120,90,.45); }
+
+  main { max-width:1200px; margin:22px auto; padding:0 20px; }
+  .page { display:none; } .page.on { display:block; }
+
+  .stats { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+  .stat { flex:1; min-width:130px; background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:14px 16px; }
+  .stat .v { font-family:var(--disp); font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .stat .l { color:var(--faint); font-size:12px; margin-top:2px; }
+  .stat.sh .v { color:var(--orange); } .stat.dn .v { color:var(--green); } .stat.pd .v { color:var(--accent); }
+
+  section { background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:16px 18px; margin-bottom:16px; }
+  section h2 { font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  section h2 .ic { color:var(--orange); }
+  section h2 small { color:var(--faint); font-weight:400; font-size:11.5px; margin-left:auto; }
+  .row { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--border);
+    font-size:13px; flex-wrap:wrap; }
+  .row .hookline { flex:1; min-width:200px; color:var(--text); overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; }
+  .row .hookline small { color:var(--faint); display:block; font-size:11px; margin-top:1px; }
+  .row .who2 { color:var(--accent); text-decoration:none; font-weight:600; font-size:12px; white-space:nowrap; }
+  .xb { font-family:var(--disp); font-weight:600; font-size:11px; color:var(--orange);
+    border:1px solid rgba(240,163,63,.4); background:rgba(240,163,63,.07); border-radius:99px;
+    padding:2px 8px; white-space:nowrap; }
+  .pill { display:inline-flex; align-items:center; gap:4px; background:#0c0f16; color:var(--muted);
+    border:1px solid var(--border); border-radius:9px; padding:5.5px 10px; font-size:11.5px;
+    cursor:pointer; text-decoration:none; font-family:var(--font); transition:all .18s; white-space:nowrap; }
+  .pill .ic { width:11px; height:11px; }
+  .pill:hover { color:var(--accent); border-color:rgba(94,161,255,.5); }
+  .pill.ok:hover { color:var(--green); border-color:rgba(63,214,143,.5); }
+  .pill.bad:hover { color:var(--red); border-color:rgba(255,92,92,.5); }
+  .none { color:var(--faint); font-size:13px; padding:14px 0 6px; }
+
+  .act { display:flex; gap:9px; padding:7px 0; border-top:1px solid var(--border);
+    font-size:12.5px; color:var(--muted); }
+  .act time { color:var(--faint); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .act b { color:var(--text); font-weight:600; }
+  .act .to { color:var(--orange); }
+
+  #radarWrap { height:calc(100vh - 150px); min-height:500px; border:1px solid var(--border);
+    border-radius:16px; overflow:hidden; }
+  #radarWrap iframe { width:100%; height:100%; border:0; }
+
+  .sop { max-width:820px; }
+  .sop h3 { font-size:15px; margin:22px 0 10px; display:flex; gap:8px; align-items:center; }
+  .sop h3 .ic { color:var(--orange); }
+  .sop ol { margin:0 0 8px 22px; color:var(--muted); font-size:13.5px; line-height:1.9; }
+  .sop ol b { color:var(--text); }
+  .sop p { color:var(--muted); font-size:13px; line-height:1.7; margin-bottom:6px; }
+  .sop table { border-collapse:collapse; font-size:13px; margin:8px 0; }
+  .sop td, .sop th { border:1px solid var(--border); padding:7px 14px; color:var(--muted); }
+  .sop th { color:var(--text); background:var(--card-hi); }
+
+  #mission { border:1px solid rgba(255,120,90,.35); border-radius:16px; padding:15px 18px;
+    margin-bottom:14px; background:linear-gradient(135deg,rgba(255,138,61,.10),rgba(255,77,109,.10)); }
+  #mission .mt { font-weight:600; font-size:14px; display:flex; gap:8px; align-items:center; }
+  #mission .mt .ic { color:var(--orange); }
+  #mission .md { color:var(--muted); font-size:12.5px; margin-top:5px; line-height:1.6; }
+  #mission .md b { color:var(--text); font-family:var(--disp); }
+  #overlay { position:fixed; inset:0; background:rgba(6,8,12,.88); backdrop-filter:blur(6px);
+    z-index:200; display:none; place-items:center; }
+  #overlay.show { display:grid; }
+  .obox { background:var(--card); border:1px solid var(--border-hi); border-radius:18px;
+    padding:28px 30px; width:min(92vw,380px); }
+  .obox h2 { font-family:var(--disp); font-size:18px; margin-bottom:6px; }
+  .obox p { color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .obox input, .obox select { width:100%; background:#0c0f16; color:var(--text);
+    border:1px solid var(--border); border-radius:10px; padding:10px 13px; font-size:14px;
+    font-family:var(--font); margin-bottom:11px; }
+  .obox input:focus, .obox select:focus { border-color:var(--accent); outline:none; }
+  .obox button { width:100%; background:linear-gradient(135deg,var(--fire1),var(--fire2));
+    color:#fff; border:0; border-radius:10px; padding:11px; font-size:14px; font-weight:600;
+    font-family:var(--font); cursor:pointer; }
+  .obox button:active { transform:scale(.98); }
+
+  #toast { position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(8px);
+    background:var(--card-hi); border:1px solid var(--border-hi); border-radius:11px;
+    padding:11px 20px; font-size:13px; display:none; z-index:300; opacity:0;
+    box-shadow:0 12px 32px rgba(0,0,0,.5); transition:opacity .2s, transform .2s; }
+  #toast.show { display:block; opacity:1; transform:translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) { * { animation:none!important; transition:none!important; } }
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><path d="m10 8 6 4-6 4Z"/><rect x="2" y="4" width="20" height="16" rx="3"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+  <symbol id="i-radar" viewBox="0 0 24 24"><path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"/><path d="M12 18h.01"/><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"/><circle cx="12" cy="12" r="2"/><path d="m13.41 10.59 5.66-5.66"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+</svg>
+<header>
+  <div class="hrow">
+    <div class="brand">
+      <div class="mark"><svg class="ic"><use href="#i-flame"/></svg></div>
+      <h1>工作台<small id="updated"></small></h1>
+    </div>
+    <div class="me" id="meBtn" title="点击修改身份">
+      <svg class="ic"><use href="#i-user"/></svg><span id="meLabel">未登记</span>
+    </div>
+  </div>
+  <nav>
+    <div class="ntab on" data-p="work"><svg class="ic"><use href="#i-clock"/></svg>今日工作</div>
+    <div class="ntab" data-p="radar"><svg class="ic"><use href="#i-radar"/></svg>爆款雷达</div>
+    <div class="ntab" data-p="sop"><svg class="ic"><use href="#i-book"/></svg>SOP</div>
+  </nav>
+</header>
+<main>
+  <div class="page on" id="p-work">
+    <div id="mission"></div>
+    <div class="stats">
+      <div class="stat pd"><div class="v" id="stPending">–</div><div class="l">未处理(待挑选)</div></div>
+      <div class="stat sh"><div class="v" id="stShoot">–</div><div class="l">拍摄中</div></div>
+      <div class="stat dn"><div class="v" id="stDone">–</div><div class="l">已处理</div></div>
+    </div>
+    <section id="secShoot">
+      <h2><svg class="ic"><use href="#i-video"/></svg>拍摄中队列<small>做完一条,点「完成」</small></h2>
+      <div id="shootList"></div>
+    </section>
+    <section id="secPick">
+      <h2><svg class="ic"><use href="#i-flame"/></svg>本周待挑选爆款 Top 8<small>看中就点「选中拍摄」,细看去爆款雷达</small></h2>
+      <div id="pickList"></div>
+    </section>
+  </div>
+  <div class="page" id="p-radar"><div id="radarWrap"></div></div>
+  <div class="page sop" id="p-sop">
+    <section>
+      <h3><svg class="ic"><use href="#i-flame"/></svg>SOP-01 · Marketer 每周选题流程(周一,约30分钟)</h3>
+      <ol>
+        <li>打开<b>爆款雷达</b>,点快筛「<b>真爆款 ×2+</b>」+「<b>近7天</b>」</li>
+        <li>看「爆款热词」确认本周主题方向(热词越多的主题越优先)</li>
+        <li>挑 <b>3–5 条</b>适合改编的。标准:话题跟我们相关 / Hook 可复制 / 我们拍得出来</li>
+        <li>每条点「<b>Brief</b>」复制 → 发到拍摄群</li>
+        <li>把选中的卡片<b>拖到「拍摄中」</b></li>
+        <li>明显不适合的拖「跳过」,保持未处理越少越好</li>
+      </ol>
+    </section>
+    <section>
+      <h3><svg class="ic"><use href="#i-video"/></svg>SOP-02 · Content Creator 拍摄改编流程(每条 ≤1天)</h3>
+      <ol>
+        <li>打开工作台「<b>今日工作</b>」,看拍摄中队列,从最旧的开始</li>
+        <li>打开原帖看 <b>3 遍</b>:第1遍看整体 / 第2遍拆 Hook(前3秒为什么让人停下) / 第3遍记结构(几个镜头、什么节奏)</li>
+        <li><b>改编不照抄</b>:换成我们的案例、口吻、行业。保留结构,替换内容</li>
+        <li>拍摄 → 剪辑。<b>前3秒必须有钩子</b>,字幕开头即出</li>
+        <li>发布后回到工作台,该条点「<b>完成</b>」</li>
+      </ol>
+    </section>
+    <section>
+      <h3><svg class="ic"><use href="#i-book"/></svg>SOP-03 · 状态定义(团队统一语言)</h3>
+      <table>
+        <tr><th>状态</th><th>意思</th><th>谁负责改</th></tr>
+        <tr><td>未处理</td><td>还没人筛选过</td><td>Marketer 每周清理</td></tr>
+        <tr><td>拍摄中</td><td>已选中,正在改编/拍摄/剪辑</td><td>Marketer 选中时拖入</td></tr>
+        <tr><td>已处理</td><td>已发布或已完成改编</td><td>Creator 完成时点</td></tr>
+        <tr><td>跳过</td><td>不适合我们,不再考虑</td><td>任何人</td></tr>
+      </table>
+    </section>
+    <section>
+      <h3><svg class="ic"><use href="#i-radar"/></svg>SOP-04 · 看到「引流」标签的帖子怎么学</h3>
+      <p>带「引流」标的帖子,重点<b>不是内容,是漏斗</b>。记录三件事:</p>
+      <ol>
+        <li>留言<b>关键词</b>是什么?(例:留言「Start」)</li>
+        <li>送的<b>诱饵</b>是什么?(模板 / 课程 / 清单)</li>
+        <li>之后导去<b>哪里</b>?(DM 自动回复 → 链接 → 报名页)</li>
+      </ol>
+      <p>好的打法直接抄结构,用我们的 GHL / ManyChat 实现。</p>
+    </section>
+    <section>
+      <h3><svg class="ic"><use href="#i-user"/></svg>SOP-05 · 竞对名单管理(发现好账号就加进来)</h3>
+      <ol>
+        <li>打开 Supabase「<b>competitors</b>」表,加一行</li>
+        <li><b>Username</b>:贴账号名或 IG <b>主页</b>链接都行(带 ?igsh= 参数没关系;不要贴帖子链接)</li>
+        <li><b>Tracker</b>:选 IG Competitors 或 AI Competitors</li>
+        <li><b>Active</b>:打勾✅ — <b>没勾不会抓</b></li>
+        <li>每周一自动生效;停止追踪 = 取消勾,不用删行</li>
+      </ol>
+      <p>加账号的标准:跟我们领域相关 / 内容有爆款相 / 值得学。发现雷达里某账号长期没爆款,把它 Active 取消,腾出额度换新的。</p>
+    </section>
+    <section>
+      <h3><svg class="ic"><use href="#i-user"/></svg>SOP-06 · 第一次设置 & 常见问题</h3>
+      <ol>
+        <li><b>登记身份:</b>第一次打开工作台会弹「你是谁」→ 输名字、选角色。这决定你看到的任务卡和排版</li>
+        <li><b>直接改状态:</b>雷达里把卡片拖到上方分类,或用卡片下拉选。看到绿色 ✓ 就成了。<b>不需要输任何密钥</b> —— 这套系统天生只允许改状态,改不了别的数据,所以安全无需登录</li>
+      </ol>
+      <p><b>常见问题:</b></p>
+      <table>
+        <tr><th>现象</th><th>原因</th><th>解决</th></tr>
+        <tr><td>改了状态没反应 / 报错</td><td>网络断了,或页面是旧版</td><td>刷新页面(Ctrl+Shift+R)再试</td></tr>
+        <tr><td>队友改的状态我看不到</td><td>页面最多 10 分钟同步一次</td><td>刷新页面即可;自己的改动是即时的</td></tr>
+        <tr><td>网页打不开 / 数据是空的</td><td>每周自动更新那天可能还在跑</td><td>等 1 小时后再开;还不行找老板看 GitHub Actions</td></tr>
+      </table>
+      <p>状态存在云端(Supabase),换电脑、关机都不会丢,全团队实时共享。</p>
+    </section>
+  </div>
+</main>
+<div id="overlay"><div class="obox">
+  <h2>👋 你是谁?</h2>
+  <p>登记一次,方便团队知道是谁在操作。</p>
+  <input id="oName" placeholder="你的名字" maxlength="20">
+  <select id="oRole">
+    <option value="Marketer">Marketer(选题/投放)</option>
+    <option value="Content Creator">Content Creator(拍摄/剪辑)</option>
+    <option value="Boss">Boss</option>
+  </select>
+  <button id="oSave">进入工作台</button>
+</div></div>
+<div id="toast"></div>
+<script id="data" type="application/json">[{"id": "DdEywAsMc_-", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "iPhone, new trick, watch this, \nwatch this ahhhh!!!! \n\n#ShotoniPhone18Pro #newtrick", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone18Pro, newtrick", "bait": false, "type": "Image", "likes": 6210589, "comments": 41526, "er": 16.57, "followers": 37735157, "date": "2026-09-09", "url": "https://www.instagram.com/p/DdEywAsMc_-/", "video": false, "ratio": 0, "score": 16.79, "status": "未处理", "x": 48.0}, {"id": "DdHAECjsOcx", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "THANK YOU.\n🎵 on iPhone 18 Pro 🤳\n\n#ShotoniPhone18Pro #JACKSONWANG #THANKYOU", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone18Pro, JACKSONWANG, THANKYOU", "bait": false, "type": "Image", "likes": 1940021, "comments": 12783, "er": 5.18, "followers": 37735157, "date": "2026-09-10", "url": "https://www.instagram.com/p/DdHAECjsOcx/", "video": false, "ratio": 0, "score": 5.24, "status": "未处理", "x": 15.0}, {"id": "DdGyfFcDUV3", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "Your Uber ride costs $70.52. But how much does your driver actually make?\n\nWe looked at what happened to the fare on one ride from Cazenovia to Syracuse, New York — and why the amount a rider pays can look very different from what a driver receives.\n\n#uber #fares #pricing #rideshare #uberdriver #soexpensive", "transcript": "I would have at least thought you were getting like $50, maybe like $45 or something like that. When I ordered an Uber ride from Kazanovia to Syracuse, New York, it cost me $70.52. But for my driver, Levi... That's how much I made. So the upfront fare, when I accepted it, was $25. How much did you pay? Well, in my investigation to understand why Uber prices have gotten so much more expensive, I wanted to know if drivers were at least making more. Levi's cut of our ride was just 39% of what I paid. Meanwhile, Uber's share of a single ride, or the service fee, is $21.29. That's 30% of the ride. The thing is, when I talked to Uber, they said on average they're still getting only about 20% of the fare in the US. But the studies I found show something else. A 2025 study of 258 drivers found that upfront pricing enabled Uber to increase its median cut from 25% to 29% and sometimes to over 50% in the UK. In a US study analyzing roughly 50,000 trips by 3 drivers found that Uber's average take rate exceeded 50% for each driver in 2026. Levi showed me that Uber also took a cut of the wait time fee. For wait time, I paid 56 cents. See, I got paid 37 cents. How was that? I'm the one that did the waiting. It's like, why is Uber making money on the wait time? Uber blames outside costs, especially the ever-increasing cost of ensuring trips, as the main reason riders pay much more than drivers receive. To see more of my full investigation, you can watch the full documentary on Business Insider's YouTube channel.", "brk": "", "my": "", "tags": "uber, fares, pricing, rideshare, uberdriver, soexpensive", "bait": false, "type": "Video", "likes": 238699, "comments": 3948, "er": 4.82, "followers": 5033235, "date": "2026-09-10", "url": "https://www.instagram.com/p/DdGyfFcDUV3/", "video": true, "ratio": 0, "score": 4.98, "status": "未处理", "x": 99.6}, {"id": "DdFFK5vSwpG", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "get set ready. “new trick” by ROSÉ \ndrops 9.17 @ 7pm EST, Shot on iPhone 18 Pro. \n\n#ShotoniPhone18Pro #Apple", "transcript": "Love's sick, I'll pick my heart off the floor New trick, watch this, watch this, oh!", "brk": "", "my": "", "tags": "ShotoniPhone18Pro, Apple", "bait": false, "type": "Video", "likes": 1788210, "comments": 13400, "er": 4.77, "followers": 37735157, "date": "2026-09-09", "url": "https://www.instagram.com/p/DdFFK5vSwpG/", "video": true, "ratio": 0, "score": 4.85, "status": "未处理", "x": 13.9}, {"id": "DdaAccQMCNT", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "“new trick” by @roses_are_rosie\n\n#ShotoniPhone18Pro \nDirected by @davemeyers", "transcript": "New trick, watch this, watch this, ow! Where it takes from time Get set, ready, ow! I'll sit, I'll pick my heart up for New trick, watch this, I'm kicking a dog Get out, come out, out, come New trick, watch this, watch this, ow! New trick, watch this, watch this", "brk": "", "my": "", "tags": "ShotoniPhone18Pro", "bait": false, "type": "Video", "likes": 663651, "comments": 5586, "er": 1.77, "followers": 37735157, "date": "2026-09-17", "url": "https://www.instagram.com/p/DdaAccQMCNT/", "video": true, "ratio": 0, "score": 1.8, "status": "未处理", "x": 5.1}, {"id": "DcbalRNsXiS", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Wait for the drop. #ShotoniPhone by Phineas P. @citizen_theartist\n\n“I filmed my friend from the sidewalk as he lowered the iPhone into the grate then we filmed a separate video where the iPhone was lowered down using a tripod in the subway. We blended the two shots together using a 3D render.” - Phineas P.\n\nMusic: ‘OVER IT’ by @citizen_theartist\n\nAdditional Software used.", "transcript": "She's over it, don't go crying on the phone again She might take that person on her over and over again He's out of state now, she got him blocked so he's culling on her payphone Just saying he's back in the morning, okay He ain't got her ass, she's back on her own way", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Video", "likes": 488335, "comments": 1409, "er": 1.3, "followers": 37735157, "date": "2026-08-24", "url": "https://www.instagram.com/p/DcbalRNsXiS/", "video": true, "ratio": 0, "score": 1.31, "status": "未处理", "x": 3.7}, {"id": "DdUFiGUM16d", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "ROSÉ en route.\n\n#ShotoniPhone18Pro #newtrick", "transcript": "New trick, watch this, watch this, oh! Get out, come out, I'll cut. New trick, watch this, watch this.", "brk": "", "my": "", "tags": "ShotoniPhone18Pro, newtrick", "bait": false, "type": "Video", "likes": 294836, "comments": 2786, "er": 0.79, "followers": 37735157, "date": "2026-09-15", "url": "https://www.instagram.com/p/DdUFiGUM16d/", "video": true, "ratio": 0, "score": 0.8, "status": "未处理", "x": 2.3}, {"id": "DdRgfx8jYBk", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "Aga's in Houston serves more than 4,000 people a day, and feeding that many customers takes a massive operation.\n\nThe restaurant has nine chefs and more than 200 employees preparing its Pakistani and Indian menu, with huge quantities of ingredients coming through the kitchen every day.\n\nBusiness Insider deputy executive producer Havovi Cooper goes inside the kitchen at Aga's to see how it all comes together.\n\n#Houston #texasfood #restaurants #bigbusiness", "transcript": "This is the busiest South Asian restaurant in America. This is like the biggest spot I've ever seen in my life. Serving more than 4,000 people every day. It takes a team of nine chefs and more than 200 employees to prep, cook and dish out the massive Pakistani and Indian menu here at Aga's in Houston. It's not a restaurant, it's a food factory. The amount of food we put out every day, it's absolutely mind-boggling. It also has the most Uber Eats delivery orders for a single location restaurant in the entire world. More than 1,000 dollars of lollipops, single lollipops. The smell of spices hits you as soon as you walk into the kitchen at Aga's. Here, cooks are hard at work starting at 7 in the morning. We have four chefs from Pakistan, three from India, one from Bangladesh. Combined experience, probably over 200 years. First, the sauce for popular dishes like paneer hindi, karahi chicken and chicken tikka masala are cooked in big batches. This is a grinder, we grind the gravy to a fine paste. No matter what's cooking, each pot starts with the same two essentials found in nearly all South Asian cooking. Onion and tomatoes, most of the gravies are based on onion and tomatoes. Purchasing a loan is a massive challenge in a restaurant this big. We do 5,000 pounds of halapenus per day. 7,000 gallon milk per month, 30,000 pound of butter a month, 10,000 gallon of oil per month. Every few minutes, chefs stir and check the sauces like for this goat shenwari karahi. Once the curries reach the right consistency, they're left to cool down. When an order comes in, cooks scoop the sauce into these pans, add the meat and prepare the rest of the dish. We used to cook it properly and then after, we passed it on.", "brk": "", "my": "", "tags": "Houston, texasfood, restaurants, bigbusiness", "bait": false, "type": "Video", "likes": 36924, "comments": 492, "er": 0.74, "followers": 5033235, "date": "2026-09-14", "url": "https://www.instagram.com/p/DdRgfx8jYBk/", "video": true, "ratio": 0, "score": 0.76, "status": "未处理", "x": 15.2}, {"id": "Db_K58NG1bq", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Peck-ture perfect. \r\n#ShotOniPhone17Pro by @nicholasalancope", "transcript": "", "brk": "", "my": "", "tags": "ShotOniPhone17Pro", "bait": false, "type": "Carousel", "likes": 219544, "comments": 2504, "er": 0.59, "followers": 37735157, "date": "2026-08-13", "url": "https://www.instagram.com/p/Db_K58NG1bq/", "video": false, "ratio": 0, "score": 0.6, "status": "未处理", "x": 1.7}, {"id": "DdUg4L1jsP4", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "This Texas barbecue restaurant doesn't serve pork, and its halal menu is a hit.\n\nAfter 14 years in Silicon Valley, Salahodeen Abdul Kafi turned his brisket-smoking hobby into Kafi BBQ. The Texas restaurant brought in $2.3 million in its first year and is projecting $4 million in revenue for 2026.\nBusiness Insider correspondent Kathleen Elkins takes a look inside the business.\n\nRead more about how Abdul-Kafi turned his barbecue hobby into a multimillion-dollar business at the link in our bio.\n\n#TexasBBQ #halal #texasfood #smallbusiness #entrepreneurs", "transcript": "How did a Halal barbecue restaurant in Texas make $2.3 million in its first year without serving pork? Owner Sala Hadine Abdul Khafi spent 14 years working in Silicon Valley and was smoking brisket just as a hobby. He saw a huge gap. Muslims wanted real Texas barbecue, but most barbecue spots rely heavily on pork. So he opened Coffee Barbecue in Irving, Texas, where everything on the menu is completely Halal. Crafting this specialty barbecue isn't cheap. Coffee spends up to $130,000 a month on food alone. And an additional $90,000 goes towards paying employees, rent, utilities, marketing, and more. But it's paying off. His projected revenue for 2026 is $4 million. Coffee's model filled a gap in the Texas barbecue market, and that's what made this small business work. Read more about small businesses like this on Business Insider.", "brk": "", "my": "", "tags": "TexasBBQ, halal, texasfood, smallbusiness, entrepreneurs", "bait": false, "type": "Video", "likes": 17014, "comments": 602, "er": 0.35, "followers": 5033235, "date": "2026-09-15", "url": "https://www.instagram.com/p/DdUg4L1jsP4/", "video": true, "ratio": 0, "score": 0.37, "status": "未处理", "x": 7.4}, {"id": "DdXJ5sHEjuN", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Jack Davison uses iPhone 18 Pro to unlock a more intimate and honest connection with his subject, in search of something more human. \n\nSee the work as part of our global photography exhibition “What Holds Us,” exploring the search for human connection within a heavily distracted contemporary world. Through moments of touch, gaze, care, ritual, solitude, and shared experience, the artists explore presence and the ways we relate, belong, and find meaning. In New York City September 18-20. \n\n#ShotoniPhone by @jackdavisonphoto \nCommissioned by Apple", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Carousel", "likes": 131804, "comments": 592, "er": 0.35, "followers": 37735157, "date": "2026-09-16", "url": "https://www.instagram.com/p/DdXJ5sHEjuN/", "video": false, "ratio": 0, "score": 0.35, "status": "未处理", "x": 1.0}, {"id": "Dcl4SbSlNZA", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Wembley after hours 🩸 @theweeknd  #ShotoniPhone by @hyghly", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Carousel", "likes": 122867, "comments": 1616, "er": 0.33, "followers": 37735157, "date": "2026-08-28", "url": "https://www.instagram.com/p/Dcl4SbSlNZA/", "video": false, "ratio": 0, "score": 0.34, "status": "未处理", "x": 1.0}, {"id": "DdMXfEGlGaX", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Stop time in its tracks. \nCommissioned by Apple. Capture the moment the way you see it with variable aperture and the versatility of Pro controls on iPhone 18 Pro. #ShotoniPhone by…\n\n1. Nicholas Alan C. @nicholasalancope\n2,4,5. Silvana T. @silvanatrevale\n3. Luis Alberto R. @luisalbertorodriguezstudio", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Carousel", "likes": 116342, "comments": 671, "er": 0.31, "followers": 37735157, "date": "2026-09-12", "url": "https://www.instagram.com/p/DdMXfEGlGaX/", "video": false, "ratio": 0, "score": 0.31, "status": "未处理", "x": 0.9}, {"id": "DcpY4f-swQD", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Natural soprano. #ShotoniPhone by Chasity H. @dear.fig", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Video", "likes": 110452, "comments": 1068, "er": 0.3, "followers": 37735157, "date": "2026-08-30", "url": "https://www.instagram.com/p/DcpY4f-swQD/", "video": true, "ratio": 0, "score": 0.3, "status": "未处理", "x": 0.9}, {"id": "DdRhA8klE_5", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Define your style. Refine the results. Commissioned by Apple. Shoot with unprecedented levels of control on iPhone 18 Pro. #ShotoniPhone by…\n\n1,3,6. Nicholas Alan C. @nicholasalancope  2,4,5. Luis Alberto R. @luisalbertorodriguezstudio", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Carousel", "likes": 75364, "comments": 536, "er": 0.2, "followers": 37735157, "date": "2026-09-14", "url": "https://www.instagram.com/p/DdRhA8klE_5/", "video": false, "ratio": 0, "score": 0.2, "status": "未处理", "x": 0.6}, {"id": "DcRJJjdG3cL", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Miles of mirrors. #ShotoniPhone by @ninamarlena \n\nMeet Nina. @ninamarlena\n\n“I’m a freelance Set Designer based in Berlin.” - Nina O.\n\nArt in transit.\n\n“Inflatables have a unique ability to transform space with relatively simple means, creating playfulness and visual impact on a large scale.” - Nina O.\n\nProfessional balloon wrangler.\n\nCrew selfie.\n\nBlooper moment.", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Carousel", "likes": 73871, "comments": 719, "er": 0.2, "followers": 37735157, "date": "2026-08-20", "url": "https://www.instagram.com/p/DcRJJjdG3cL/", "video": false, "ratio": 0, "score": 0.2, "status": "未处理", "x": 0.6}, {"id": "DdWxafdmu9v", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Jimmy Chin takes iPhone 18 Pro to new heights to depict the spiritual connection between climber and pure verticality.\n\nSee the work as part of our global photography exhibition “What Holds Us,” exploring the search for human connection within a heavily distracted contemporary world. Through moments of touch, gaze, care, ritual, solitude, and shared experience, the artists explore presence and the ways we relate, belong, and find meaning. In New York City September 18-20. \n\n#ShotoniPhone by @jimmychin\nCommissioned by Apple", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Carousel", "likes": 74877, "comments": 280, "er": 0.2, "followers": 37735157, "date": "2026-09-16", "url": "https://www.instagram.com/p/DdWxafdmu9v/", "video": false, "ratio": 0, "score": 0.2, "status": "未处理", "x": 0.6}, {"id": "Db8iyXEG8Nb", "tracker": "Ivan-Test-Viral 竞对", "competitor": "apple", "caption": "Five little worlds. #ShotoniPhone by @lito_leafart \n\n“I intentionally include my hand in many of my photographs so viewers can understand just how small each leaf is.” - Kenji H.", "transcript": "", "brk": "", "my": "", "tags": "ShotoniPhone", "bait": false, "type": "Carousel", "likes": 69631, "comments": 418, "er": 0.19, "followers": 37735157, "date": "2026-08-12", "url": "https://www.instagram.com/p/Db8iyXEG8Nb/", "video": false, "ratio": 0, "score": 0.19, "status": "未处理", "x": 0.5}, {"id": "DdKb5EsDzCY", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "Usually, older iPhones get cheaper when a new model comes out. But the iPhone 16, 17, and 17e are all getting $100 more expensive.\n\nBusiness Insider looks at what's behind the price increases, including the growing demand for memory and storage from AI data centers.\n\n#Apple #iphoneduo  #consumertech #AIdatacenters #memorychips", "transcript": "Apple just announced the prices of its newest iPhones. But what really caught our attention was the price of the old ones. Old iPhones are getting more expensive. Usually when a new model comes out, the old ones get cheaper, but the iPhone 16, 17, and 17e are all going to be $100 more expensive. So what's going on here? It's actually part of a bigger trend of Apple's old technology getting more expensive. In June, Apple announced that a bunch of devices would be seeing a price hike, like this MacBook Pro, which costs $1,600 in 2025, then jumped up to $2,000 in June. Apple's reasoning, demand for memory and storage fueled by the rapid expansion of AI data centers. You see, three of the world's biggest chip makers are shifting production capacity away from the DRAM and NAND chips used in consumer electronics and toward HBM, a specialized type of memory used in AI data centers. If you're a memory chip company, obviously you're going to go to the best customers and right now, those are the AI companies. That leaves less production capacity for the other types of memory chips. As DRAM and NAND become harder to find, their prices rise, driving up costs for electronics companies like Apple. Apple is one of, if not the largest purchaser of a lot of these memory modules and stuff, at least for consumer facing hardware in the world. So for them to be facing the same difficulties with acquiring the pieces that they need to build their electronics is pretty remarkable. Apple has kind of lost control of the computer supply chain a little bit lately because it doesn't have a lot of AI data centers. To learn more about how the memory shortage is affecting prices for your electronics, watch the full video on Business Insider's YouTube channel.", "brk": "", "my": "", "tags": "Apple, iphoneduo, consumertech, AIdatacenters, memorychips", "bait": false, "type": "Video", "likes": 7373, "comments": 160, "er": 0.15, "followers": 5033235, "date": "2026-09-11", "url": "https://www.instagram.com/p/DdKb5EsDzCY/", "video": true, "ratio": 0, "score": 0.16, "status": "未处理", "x": 3.2}, {"id": "DdZjAC3CbOb", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "Brittney Ball was dropping off her children at school when she learned she'd been laid off from Meta. \"I felt numb,\" she said. \"All of the ideas that I have in my career — everything went dark.\"\n\nBall and three other Big Tech workers share how they learned they'd been laid off from their six-figure jobs — and how those job losses had a lasting impact on their careers and mental health. \n\n#BigTech #layoffs #Meta #unemployment #lifelessons", "transcript": "", "brk": "", "my": "", "tags": "BigTech, layoffs, Meta, unemployment, lifelessons", "bait": false, "type": "Video", "likes": 6553, "comments": 290, "er": 0.14, "followers": 5033235, "date": "2026-09-17", "url": "https://www.instagram.com/p/DdZjAC3CbOb/", "video": true, "ratio": 0, "score": 0.15, "status": "未处理", "x": 3.0}, {"id": "DdWrb5qFJXt", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "When Shaukat Maredia and his family bought Aga's in 2010, he barely knew how to make a cup of tea. After a steep learning curve and two years of losses, Maredia transformed the restaurant into one of the busiest in the country. \n\nBusiness Insider deputy executive producer Havovi Cooper goes inside Aga's to see how he did it. \n\n#Houston #pakistanifood #indianfood #bigbusiness", "transcript": "For Shaukat, owning a restaurant has come with a big learning curve that continues until today. At the time when we bought this restaurant, the only thing I knew how to make is maybe a cup of tea. Nobody knows anything in my family how to cook. Shaukat's family is from India and Pakistan. He moved to the US when he was 20 years old and picked up work wherever he could. I had three or four jobs going from dry cleaners and working for auto dealership. Then in 2010, his family approached him with an idea to buy a struggling restaurant. One of my brothers, Karim, and one of my cousins came to me and said, hey, this restaurant is for sale. Let's buy it. It's very funny that a week before this conversation, I had a really bad experience here. I laughed at it myself. Are you guys crazy? They paid less for the whole restaurant than what it now makes in a single weekend. When we originally acquired this was the space. This one all the way back was 6,000 square foot roughly. And then as we got busier, we needed more space. The first couple of years were not exactly a success. It was tough. It was stressful. Every month, we were losing money. For good two years, everything was wrong. There was no system in place. There was no accountability. Somebody's saying hi to us. We'll go talk to them. Now, so many Dacys come here, I actually ran into people I knew back in Pakistan. Which one? Hi. Malisa Coach. I actually know them. Oh, you can do it. I wondered when I would run into Parsi zoo. How are you doing? When we were kids. I know how to do it. School in the same like van and all of that stuff. So good to see you. So good to see you too, yeah. So what led to Agar's rise? When we bought it, it used to be Agar's Pakistani restaurant. We changed that to Indo Park restaurant. That was a big deal because now people recognize, okay, this is Indian and Pakistani restaurant. So we start getting a lot more customers. The owners focused on expanding the menu and improving the quality of the food. Chokat also went all in on the tech to provide customers with a smoother experience. I always compare Agar's to Apple, Microsoft, Google. What do they do that makes them successful? It's product, service and process.", "brk": "", "my": "", "tags": "Houston, pakistanifood, indianfood, bigbusiness", "bait": false, "type": "Video", "likes": 4960, "comments": 81, "er": 0.1, "followers": 5033235, "date": "2026-09-16", "url": "https://www.instagram.com/p/DdWrb5qFJXt/", "video": true, "ratio": 0, "score": 0.1, "status": "未处理", "x": 2.0}, {"id": "DdSGtgxGygr", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "Some CEOs have very strict agendas, but Julie Chapon, the 39-year-old CEO and cofounder of Yuka, doesn't like her day to be too defined.\n\nChapon used to work at a consultancy firm where she had no choice in what she did. When she started Yuka in France around 10 years ago, Chapon thought, \"OK, now no one's going to tell me what I have to do.\"\n\nYuka grew very quickly, and Chapon says she learned to say no, in a very polite way, to 80% of the emails she receives. Yuka has a yearly road map that she’s in charge of. “If I spend my time doing other things, I can't deliver,” Chapon says. \n\nChapon also said she used to put up barriers because she didn't feel like the right person for certain opportunities, even if she was. Now she just acts, and legitimacy comes.\n\nRead more about what a day in Chapon’s life as CEO looks like at the link in our bio.\n\nAs told to Kashmira Gander\n\n(Credit: Adélaïde Chantilly)\n\n#CEO #diml #dayinthelife", "transcript": "", "brk": "", "my": "", "tags": "CEO, diml, dayinthelife", "bait": false, "type": "Image", "likes": 3739, "comments": 134, "er": 0.08, "followers": 5033235, "date": "2026-09-14", "url": "https://www.instagram.com/p/DdSGtgxGygr/", "video": false, "ratio": 0, "score": 0.08, "status": "未处理", "x": 1.6}, {"id": "DdHzjlQI3mj", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "Meta wants some of its employees to be managers again.\n\nThe social media giant has been asking some individual contributors in its Applied AI (AAI) division to transition back into management roles as part of a recent reshuffle, four people with knowledge of the matter told Business Insider. This program is opt-in, a person familiar said.\n\nAAI is a newly-launched Meta division focused on training AI models. Meta launched the group this year and reassigned roughly 7,000 employees to it. Some of those people were previously managers and given individual contributor roles within AAI.\n\nMeta declined to comment.\n\nThe move marks a partial reversal for Meta, which has spent much of the past year cutting middle management and promoting smaller, flatter teams as more efficient.\n\nRead more about the partial reversal at the link in our bio.\n\nStory by Hugh Langley, Charles Rollet, and Pranav Dixit\n\n(Credit: Getty Images)\n\n#meta #management #careers", "transcript": "", "brk": "", "my": "", "tags": "meta, management, careers", "bait": false, "type": "Image", "likes": 2331, "comments": 96, "er": 0.05, "followers": 5033235, "date": "2026-09-10", "url": "https://www.instagram.com/p/DdHzjlQI3mj/", "video": false, "ratio": 0, "score": 0.05, "status": "未处理", "x": 1.0}, {"id": "DdE6JDIiY4b", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "By now, most working professionals are well aware of the rules that have come to define corporate-appropriate presentation: Skip flashy designer logos, steam blouses and dress shirts, avoid open-toed shoes, and if it's described as \"office siren,\" ditch it altogether.\n\nThere is another detail, though, you might be overlooking when getting ready for the office: your phone case.\n\nTo Michelle T. Sterling, an image consultant and personal stylist with over 20 years of experience, a phone is similar to a pair of shoes or a watch. It's an accessory.\n\nCorporate stylists and image consultants who spoke to Business Insider advised to treat this shiny little device as though it's sending a message about you — because it likely is, whether you intend it to or not. \n\n\"People do notice these things,\" Sterling said.\n\nRead more about how your phone case is affecting your workplace image at the link in our bio.\n\nStory by Payton Turkeltaub\n\n(Credit: Getty Images; Tyler Le/Business Insider)\n\n#style #emp", "transcript": "", "brk": "", "my": "", "tags": "style, employee, phonecase", "bait": false, "type": "Image", "likes": 2210, "comments": 120, "er": 0.05, "followers": 5033235, "date": "2026-09-09", "url": "https://www.instagram.com/p/DdE6JDIiY4b/", "video": false, "ratio": 0, "score": 0.05, "status": "未处理", "x": 1.0}, {"id": "DdKfOLsHK0z", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "Tennis fans are serving at this year’s US Open. We’re talking about their fashion, of course.\n\nAttendees have been photographed walking throughout the USTA Billie Jean King National Tennis Center in New York for the past two weeks, wearing standout ensembles and luxury timepieces.\n\nSee more of the best fashion looks we spotted on the ground at the link in our bio.\n\nStory by Amanda Krause and Samantha Grindell Pettyjohn\n\n(Credit: Daniel Edward Photography for Business Insider)\n\n#usopen #fashion #statussymbols \n\nBulgari watches are elevating simple outfits. \n\nBlue jeans are out, and white jeans are in. \n\nMonochrome outfits are everywhere. \n\nWomen are pairing their miniskirts with polo shirts.", "transcript": "", "brk": "", "my": "", "tags": "usopen, fashion, statussymbols", "bait": false, "type": "Carousel", "likes": 2135, "comments": 76, "er": 0.04, "followers": 5033235, "date": "2026-09-11", "url": "https://www.instagram.com/p/DdKfOLsHK0z/", "video": false, "ratio": 0, "score": 0.05, "status": "未处理", "x": 1.0}, {"id": "DdUQDzYDkrL", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "When your net worth is almost $1 trillion, you can choose to live wherever you want, and right now, for Elon Musk, that's a trailer.\n\nMusk, the world's richest person, said on Monday that he's currently calling an Airstream trailer home while overseeing xAI's Macrohard data center buildout in Tennessee.\n\nThe billionaire has been personally embedded in Memphis in recent months as SpaceX, which absorbed xAI earlier this year, races to bring more GPU capacity online, and he says he has been sleeping steps from the servers rather than commuting.\n\nStaying in a trailer rather than securing more permanent housing isn't out of character for Musk, who has a track record of sleeping at his workplaces rather than commuting, and living in relatively modest homes.\n\nRead more about Musk’s current living conditions at the link in our bio.\n\nStory by Georgia Hennessy\n\n(Credit: Getty Images)\n\n#ElonMusk #SpaceX #trailerliving", "transcript": "", "brk": "", "my": "", "tags": "ElonMusk, SpaceX, trailerliving", "bait": false, "type": "Image", "likes": 1606, "comments": 248, "er": 0.04, "followers": 5033235, "date": "2026-09-15", "url": "https://www.instagram.com/p/DdUQDzYDkrL/", "video": false, "ratio": 0, "score": 0.05, "status": "未处理", "x": 1.0}, {"id": "DdXQTO0Iwep", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "It's 5:52 a.m. in Moynihan Train Hall. Sienna Sullivan is balancing a container of fruit and her water bottle in one hand while tightening the straps of a backpack that's weighed down by two laptops with her other.\n\nIt's the start of her twice-weekly commute between New York City and Washington, DC.\n\nSullivan is five months into this supercommute, and she can practically traverse the Northeast Corridor in her sleep. More importantly, she has learned how to turn eight hours on Amtrak trains into one of the most productive parts of her workweek.\n\nRead more about how Sullivan manages her supercommute at the link in our bio.\n\nStory by Sienna Sullivan\n\n(Credit: Sienna Sullivan)\n\n#supercommute #Amtrack #NYC", "transcript": "", "brk": "", "my": "", "tags": "supercommute, Amtrack, NYC", "bait": false, "type": "Image", "likes": 1990, "comments": 89, "er": 0.04, "followers": 5033235, "date": "2026-09-16", "url": "https://www.instagram.com/p/DdXQTO0Iwep/", "video": false, "ratio": 0, "score": 0.04, "status": "未处理", "x": 0.8}, {"id": "DdZFDDRl_b_", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "JPMorgan has launched $2,000 monthly spending limits for some employees using Claude Code, internal messages seen by Business Insider show.\n\nThe cap, along with a new security effort for some Claude users, marks another evolution in how America's biggest bank is refining its AI use amid ballooning costs and risks, and reshaping expectations for software engineers.\n\nLast month, two Teams messages in a group for some engineers with access to Anthropic's Claude asked about a new error code: \"ExceededBudget\" and \"Budget=2000.0.\"\n\nResponses from employees said that there is a monthly spending limit of $2,000 for certain engineers using Claude; two responses said that costs reset monthly. Other replies said that users can request to increase their spending limit.\n\nRead more about JPMorgan’s new Claude spending limit at the link in our bio.\n\nBy Alice Tecotzky\n\n(Credit: Getty Images)\n\n#JPMorgan #Claude #spendinglimit", "transcript": "", "brk": "", "my": "", "tags": "JPMorgan, Claude, spendinglimit", "bait": false, "type": "Image", "likes": 2119, "comments": 23, "er": 0.04, "followers": 5033235, "date": "2026-09-17", "url": "https://www.instagram.com/p/DdZFDDRl_b_/", "video": false, "ratio": 0, "score": 0.04, "status": "未处理", "x": 0.8}, {"id": "DdUGsvUimJa", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "At Aga's, Indian and Pakistani food traditions come together on the same menu.\n\nSome dishes lean more Indian, while others are more popular in Pakistan. The Houston restaurant also brings together South Asian and Latino workers in its kitchen.\n\nBusiness Insider deputy executive producer @Havovi Cooper goes inside Aga's to see how it all comes together. \n\nWatch the full video about the food and people behind Aga's at the link in our bio.\n\n#Houston #texasfood #restaurants #bigbusiness", "transcript": "The menu reflects a shared South Asian heritage. But some dishes lean more Indian, while others are more popular in Pakistan. Chicken boti, Malai boti, Malai kabab. Pakistan for breakfast, you gotta have a meat, lunch, you gotta have a meat, dinner, you gotta have a meat. And when you wake up in the middle of the night, you gotta have a meat. So at Aga's, meat is a serious business. This is our contest and busiest station here in Aga's. Because this is the station where you can say world famous shops are ready. And these are the people who make it. They are like full of spices, tender, just feel like heaven. Aga's also goes through 30,000 pounds of chicken a month. You can see that there are 4 people here who are cleaning the soup. Does this work the whole day? Yes, the whole day. Most of the spices come straight from the mothernance, India and Pakistan. And the chefs are pretty secretive about the different blends because it's what makes their recipes special. You can even grind it. Yes, you can grind it. You can add whole spices and then grind it to know what ingredients we need. Wow, that's a lot of chili spice. That's amazing. One of their most huge spices is chili powders. It comes from India. They go through more than 40 pounds a day. And one of their most expensive ones is saffron, also from India. Probably 5 hours will cost you over 60-70 dollars. Buy the best ingredients available in the market. Don't worry about what the cost is. It's important to our customers, important to my chefs. Back in the kitchen, the team is gearing up for the Friday lunch rush. They're about to turn out nearly 100 South Asian dishes. But there's a twist. Like with so many restaurant kitchens in America, a lot of the people cooking the food are Latino. I kind of love that this moment just happened. Basically, he just said thank you brother in two different languages in Spanish. Gracias, bye. In Urdu. And it kind of captures the teamwork between the two cultures here. The Latino workers and the South Asian front of house as well.", "brk": "", "my": "", "tags": "Houston, texasfood, restaurants, bigbusiness", "bait": false, "type": "Video", "likes": 2066, "comments": 28, "er": 0.04, "followers": 5033235, "date": "2026-09-15", "url": "https://www.instagram.com/p/DdUGsvUimJa/", "video": true, "ratio": 0, "score": 0.04, "status": "未处理", "x": 0.8}, {"id": "DdHKXK4DejD", "tracker": "Ivan-Test-Viral 竞对", "competitor": "businessinsider", "caption": "Anthropic posted — and then deleted — a job listing for a salesperson tasked with selling to Meta, its AI rival and one of its largest customers.\n\nThe listing, titled \"Mega Account Executive, Meta,\" appeared on Anthropic's job board at a delicate moment for the companies' relationship.\n\nMeta still spends hundreds of millions of dollars a month as Anthropic's customer, according to a recent New York Times report. But it's also trying to reduce its reliance on Anthropic's AI tools as Anthropic is shoring up its finances ahead of a massive initial public offering.\n\nThe post suggests Anthropic is betting Meta will remain a major customer even as Meta builds more capable AI models of its own.\n\nAfter Business Insider asked Anthropic about the listing on Wednesday, the company pulled it down. Anthropic and Meta declined to comment.\n\nRead more about the job posting at the link in our bio.\n\nStory by Payton Turkeltaub\n\n(Credit: Getty Images)\n\n#Anthropic #AI #Meta", "transcript": "", "brk": "", "my": "", "tags": "Anthropic, AI, Meta", "bait": false, "type": "Image", "likes": 1717, "comments": 12, "er": 0.03, "followers": 5033235, "date": "2026-09-10", "url": "https://www.instagram.com/p/DdHKXK4DejD/", "video": false, "ratio": 0, "score": 0.03, "status": "未处理", "x": 0.6}]</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const SUPA = 'https://ijptmjiuyifrwqbcxukt.supabase.co';
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqcHRtaml1eWlmcndxYmN4dWt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTgxNzgsImV4cCI6MjEwMzg3NDE3OH0.lsOQ7XuUcNDklnJmBAk0LcW-epz3uI0GoABLD2ktcaU';
+document.getElementById('updated').textContent = '数据更新于 2026-09-18 18:01 (GMT+8)';
+
+const $ = id => document.getElementById(id);
+const I = n => '<svg class="ic"><use href="#i-' + n + '"/></svg>';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+const getKey = () => ANON;  // anon key is baked in — safe, can only change status
+const firstLine = c => ((c || '').split('\n').map(l => l.trim()).filter(Boolean)[0] || '(无文案)');
+const byRec = {}; DATA.forEach(d => byRec[d.id] = d);
+
+function toast(msg, ok) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  t.style.borderColor = ok ? 'var(--green)' : 'var(--red)';
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ---- mission card ----
+function renderMission() {
+  const role = localStorage.getItem('tm_role') || '';
+  const name = localStorage.getItem('tm_name') || '';
+  const pend = DATA.filter(d => d.status === '未处理').length;
+  const hot = DATA.filter(d => d.status === '未处理' && (d.x || 0) >= 2).length;
+  const queue = DATA.filter(d => d.status === '拍摄中').length;
+  const done = DATA.filter(d => d.status === '已处理').length;
+  const m = $('mission');
+  if (role === 'Marketer') {
+    m.innerHTML = '<div class="mt">' + I('flame') + esc(name) + ',任务:从待挑选里选出值得拍的</div>'
+      + '<div class="md">待挑选 <b>' + pend + '</b> 条(其中真爆款 ×2+ 有 <b>' + hot + '</b> 条)'
+      + ' · 从下面清单直接选,或去雷达细看</div>';
+  } else if (role === 'Content Creator') {
+    m.innerHTML = '<div class="mt">' + I('video') + esc(name) + ',任务:清空拍摄中队列</div>'
+      + '<div class="md">队列还有 <b>' + queue + '</b> 条待做 · 已完成共 <b>' + done + '</b> 条</div>';
+  } else {
+    m.innerHTML = '<div class="mt">' + I('flame') + '团队概览</div>'
+      + '<div class="md">待挑选 <b>' + pend + '</b> 条 · 拍摄中 <b>' + queue + '</b> 条 · 已完成 <b>' + done + '</b> 条</div>';
+  }
+}
+
+function orderSections() {
+  // Marketer sees picks first; Creator sees shooting queue first
+  if ((localStorage.getItem('tm_role') || '') === 'Marketer') {
+    $('secShoot').parentNode.insertBefore($('secPick'), $('secShoot'));
+  } else {
+    $('secPick').parentNode.insertBefore($('secShoot'), $('secPick'));
+  }
+}
+
+// ---- identity ----
+function meLabel() {
+  const n = localStorage.getItem('tm_name'), r = localStorage.getItem('tm_role');
+  $('meLabel').innerHTML = n ? '<b>' + esc(n) + '</b>&nbsp;· ' + esc(r || '') : '未登记';
+}
+function showOverlay() {
+  $('oName').value = localStorage.getItem('tm_name') || '';
+  $('oRole').value = localStorage.getItem('tm_role') || 'Marketer';
+  $('overlay').classList.add('show');
+}
+$('oSave').onclick = () => {
+  const n = $('oName').value.trim();
+  if (!n) { $('oName').focus(); return; }
+  localStorage.setItem('tm_name', n);
+  localStorage.setItem('tm_role', $('oRole').value);
+  $('overlay').classList.remove('show');
+  meLabel(); orderSections(); renderMission();
+  refreshStatuses();
+};
+$('meBtn').onclick = showOverlay;
+meLabel();
+if (!localStorage.getItem('tm_name')) showOverlay();
+
+// ---- tabs ----
+document.querySelectorAll('.ntab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.ntab').forEach(x => x.classList.toggle('on', x === t));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.p));
+  if (t.dataset.p === 'radar' && !$('radarWrap').querySelector('iframe')) {
+    const f = document.createElement('iframe'); f.src = 'index.html'; $('radarWrap').appendChild(f);
+  }
+});
+
+// ---- status write ----
+async function setStatus(d, val) {
+  try {
+    const r = await fetch(SUPA + '/rest/v1/posts?post_id=eq.' + encodeURIComponent(d.id), {
+      method: 'PATCH',
+      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ status: val })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    d.status = val;
+    cacheStatus(d.id, val);
+    toast('✓ @' + d.competitor + ' → ' + val, true);
+  } catch (e) {
+    toast('失败: ' + e.message, false);
+  }
+  renderWork();
+}
+
+// ---- 今日工作 ----
+function pillBtn(cls, icon, label) {
+  return '<button class="pill ' + cls + '">' + I(icon) + label + '</button>';
+}
+
+function renderWork() {
+  const pend = DATA.filter(d => d.status === '未处理');
+  const shoot = DATA.filter(d => d.status === '拍摄中');
+  const done = DATA.filter(d => d.status === '已处理');
+  $('stPending').textContent = pend.length;
+  $('stShoot').textContent = shoot.length;
+  $('stDone').textContent = done.length;
+
+  // shooting queue
+  const sl = $('shootList'); sl.innerHTML = '';
+  if (!shoot.length) sl.innerHTML = '<div class="none">队列是空的 — Marketer 去爆款雷达挑几条拖进「拍摄中」</div>';
+  shoot.forEach(d => {
+    const r = document.createElement('div'); r.className = 'row';
+    r.innerHTML = '<a class="who2" href="https://www.instagram.com/' + d.competitor + '/" target="_blank">@' + esc(d.competitor) + '</a>'
+      + ((d.x || 0) >= 2 ? '<span class="xb">×' + d.x + '</span>' : '')
+      + '<span class="hookline">' + esc(firstLine(d.caption)) + '</span>'
+      + '<a class="pill" href="' + d.url + '" target="_blank">' + I('ext') + '原帖</a>'
+      + pillBtn('ok', 'check', '完成') + pillBtn('bad', 'x', '退回');
+    const btns = r.querySelectorAll('button');
+    btns[0].onclick = () => setStatus(d, '已处理');
+    btns[1].onclick = () => setStatus(d, '未处理');
+    sl.appendChild(r);
+  });
+
+  // picks
+  const picks = pend.filter(d => (d.x || 0) >= 2).sort((a, b) => (b.x || 0) - (a.x || 0)).slice(0, 8);
+  const pl = $('pickList'); pl.innerHTML = '';
+  if (!picks.length) pl.innerHTML = '<div class="none">暂时没有 ×2 以上的未处理爆款 — 等周一自动抓新数据</div>';
+  picks.forEach(d => {
+    const r = document.createElement('div'); r.className = 'row';
+    r.innerHTML = '<span class="xb">×' + d.x + '</span>'
+      + '<a class="who2" href="https://www.instagram.com/' + d.competitor + '/" target="_blank">@' + esc(d.competitor) + '</a>'
+      + '<span class="hookline">' + esc(firstLine(d.caption))
+      + '<small>🔥' + d.score + ' · ER ' + d.er + '% · 💬' + fmt(d.comments) + '</small></span>'
+      + '<a class="pill" href="' + d.url + '" target="_blank">' + I('ext') + '原帖</a>'
+      + pillBtn('ok', 'video', '选中拍摄') + pillBtn('bad', 'x', '跳过');
+    const btns = r.querySelectorAll('button');
+    btns[0].onclick = () => setStatus(d, '拍摄中');
+    btns[1].onclick = () => setStatus(d, '跳过');
+    pl.appendChild(r);
+  });
+  renderMission();
+}
+
+function applyStatusCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem('st_cache') || '{}');
+    Object.keys(c).forEach(rid => { const d = byRec[rid]; if (d) d.status = c[rid]; });
+  } catch (e) {}
+}
+
+function cacheStatus(rid, val) {
+  try {
+    const c = JSON.parse(localStorage.getItem('st_cache') || '{}');
+    c[rid] = val; localStorage.setItem('st_cache', JSON.stringify(c));
+  } catch (e) {}
+}
+
+// ---- live statuses from Supabase ----
+async function refreshStatuses() {
+  applyStatusCache(); renderWork();  // last-known statuses first
+  if (Date.now() - (+localStorage.getItem('st_ts') || 0) < 600000) return;  // 10-min throttle
+  localStorage.setItem('st_ts', String(Date.now()));
+  const fresh = {};
+  try {
+    const r = await fetch(SUPA + '/rest/v1/posts?select=post_id,status', { headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON } });
+    if (!r.ok) return;
+    (await r.json()).forEach(row => {
+      const d = byRec[row.post_id];
+      if (d) d.status = row.status || '未处理';
+      if (row.status && row.status !== '未处理') fresh[row.post_id] = row.status;
+    });
+    localStorage.setItem('st_cache', JSON.stringify(fresh));
+    renderWork();
+  } catch (e) {}
+}
+
+orderSections();
+renderMission();
+renderWork();
+refreshStatuses();
+</script>
+</body>
+</html>
