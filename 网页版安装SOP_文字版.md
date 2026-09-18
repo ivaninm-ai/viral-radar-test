@@ -3,7 +3,7 @@
 点一个按钮复制模板,全程网页操作。
 ✋ 零终端 · 不用打任何指令 · 不用装任何软件。
 
-装完之后系统每周自动:抓竞对 IG 爆款 → 转录口播 → AI 拆解 → 生成可拖拽管理的 dashboard。
+装完之后系统每周自动:抓竞对 IG 爆款 → 转录口播 → AI 拆解 → 改写成你自己语气的口播稿 → 生成可拖拽管理的 dashboard。
 
 ---
 
@@ -32,83 +32,14 @@
 
 1. supabase.com → New project(Region 选 Singapore,数据库密码自己存好)
 2. 左边点 SQL Editor → New query
-3. 把下面整段 SQL 复制,粘贴进去
-4. 只改最底下 3 行的「这里换成竞对1/2/3」,换成你的竞对 IG 账号名(只要账号名,不要 @,不要链接;要几个加几行)。上面一个字都别动
+3. 回到 GitHub 你的仓库,点开 `schema.sql` → 右上角「Copy raw file」(两个小方块的图标),整段复制,贴进 SQL Editor
+4. 只改最底下的 `example_account_1/2/3`,换成你的竞对 IG 账号名(只要账号名,不要 @,不要链接;要几个加几行)。上面一个字都别动
 5. 点 Run,看到 Success
 6. 左边点 Table Editor,确认 posts 和 competitors 两张表都在,competitors 里是你填的竞对
 
-```sql
--- 爆款雷达 · Supabase 建表(可重复跑,会先删旧表重建)
-
-drop table if exists posts cascade;
-drop table if exists competitors cascade;
-
--- 爆款帖子
-create table posts (
-  id              bigint generated always as identity primary key,
-  post_id         text unique not null,
-  tracker         text not null default 'IG',
-  competitor      text,
-  caption         text,
-  transcript      text,
-  ai_breakdown    text,
-  post_type       text,
-  likes           integer default 0,
-  comments        integer default 0,
-  followers       integer default 0,
-  engagement_rate numeric generated always as
-      ((likes + comments)::numeric / nullif(followers, 0)) stored,
-  viral_score     numeric generated always as
-      (round((greatest(likes,0) + comments*3)::numeric / nullif(followers,0) * 100, 2)) stored,
-  post_date       date,
-  post_url        text,
-  thumbnail_url   text,
-  video_url       text,
-  hashtags        text,
-  is_video        boolean default false,
-  status          text default '未处理',
-  last_synced     date,
-  created_at      timestamptz default now()
-);
-
-create index posts_status_idx on posts (status);
-create index posts_score_idx  on posts (viral_score desc);
-
--- 竞对名单
-create table competitors (
-  id         bigint generated always as identity primary key,
-  username   text not null,
-  tracker    text not null default 'IG',
-  active     boolean default true,
-  notes      text,
-  created_at timestamptz default now()
-);
-
--- ========= 安全锁(别删!公开钥匙只能读帖子 + 改 status 一列)=========
-alter table posts       enable row level security;
-alter table competitors enable row level security;
-
-revoke all on posts       from anon;
-revoke all on competitors from anon;
-
-grant select on posts to anon;
-grant update (status) on posts to anon;
-
-drop policy if exists "anon read posts"    on posts;
-drop policy if exists "anon update status" on posts;
-create policy "anon read posts"    on posts for select to anon using (true);
-create policy "anon update status" on posts for update to anon using (true) with check (true);
-
--- ↓↓↓ 只改这 3 行:换成你的竞对 IG 账号(纯账号名,不要 @,不要链接)↓↓↓
-insert into competitors (username, tracker, active) values
-  ('这里换成竞对1', 'IG', true),
-  ('这里换成竞对2', 'IG', true),
-  ('这里换成竞对3', 'IG', true);
-```
-
 ⚠️ 只改最底下几行,上面一律别动:上面那一大段有安全锁,保证公开钥匙只能读数据、改状态,删不掉你的数据。删了或改了,别人拿到网址就能删光你的东西。
 
-⚠️ 装好后别再重跑这段 SQL:开头有一句「先删表重建」,第一次装没事;但等抓到爆款之后再跑一次,会把数据清空。以后加/停竞对去 Table Editor 改,别回来重跑 SQL。
+✅ 这段 SQL 可以放心重复跑:不会报错、不会清数据、不会产生重复竞对。贴错了再贴一次、再 Run 一次就好。以后加/停竞对去 Table Editor 改更快。
 
 ---
 
@@ -137,6 +68,8 @@ Project Settings → API,复制三样(先放记事本):
 | SUPABASE_ANON_KEY | 第 3 步的 anon key |
 | SUPABASE_SERVICE_ROLE_KEY | 第 3 步的 service_role key |
 | APIFY_TOKEN | Apify → Settings → API 里的 token |
+
+(可选第 5 个:ANTHROPIC_API_KEY —— Claude 的 API key。不加也能用,AI 拆解和「我的稿」默认走 GitHub 免费额度;加了质量更好。)
 
 ② 点 Variables 分页,New repository variable,加这 3 个:
 
@@ -172,7 +105,7 @@ Project Settings → API,复制三样(先放记事本):
 
 检查三样:
 - [ ] 网页打得开,有爆款卡片
-- [ ] 点卡片能播放视频、看口播稿和 AI 拆解
+- [ ] 点卡片能播放视频、看口播稿、AI 拆解和绿色的「🎬 我的版本」
 - [ ] 拖一张卡到「拍摄中」,出现绿色 ✓(手机也能操作,不用密码)
 
 比喻:电饭煲按下去就走开——网页好了自然在,不用盯着。
@@ -181,9 +114,20 @@ Project Settings → API,复制三样(先放记事本):
 
 ## 装好之后:每周只做三件事
 
-1. 每周一打开网页,新爆款自动排好队,带口播稿和 AI 拆解
-2. 想拍的拖到「拍摄中」,拍完拖「已处理」。团队打开都是同一个看板
+1. 每周一打开网页,新爆款自动排好队,带口播稿、AI 拆解和「我的稿」
+2. 想拍的:点「我的稿」复制 AI 改成你语气的口播稿,直接拍;拖到「拍摄中」,拍完拖「已处理」。团队打开都是同一个看板
 3. 加/停竞对:Supabase → Table Editor → competitors 表加行(active 打勾)或取消勾
+
+## 装好之后一定要做一次:告诉 AI 你是谁(我的稿)
+
+「我的稿」是 AI 按你的人设、语气、受众和红线,把每条爆款改写成 30-60 秒可以直接念的中文口播稿。没设之前它用的是一个通用示例人设,稿子不像你。
+
+1. 你的仓库 → 点开 brand_voice.md → 右上角铅笔 ✏️
+2. 把每一段的「示例」换成你自己的(人设 / 语气 / 受众痛点 / 敢公开说的承诺 / 红线)。## 开头的标题别动
+3. 右上角 Commit changes
+4. 重刷已经生成的稿子:Actions → 左边 Rewrite To My Voice → Run workflow → rewrite_all 填 1 → 绿色 Run workflow。跑完再去 Actions → Deploy Dashboard → Run workflow 刷网页
+
+以后新帖自动用新语气,想换语气就重复这 4 步。
 
 ---
 
@@ -194,6 +138,7 @@ Project Settings → API,复制三样(先放记事本):
 | 网页 404 | 先等首跑完整结束;再看 Actions 有没有红色失败的 |
 | 抓到 0 条 | competitors 表账号拼错 / active 没勾 |
 | 标题还是「爆款雷达」 | Variables 的 BRAND 没设,设好后重跑 Deploy Dashboard |
+| 卡片没有「我的稿」按钮 | 这条没材料(没口播稿也没像样文案)/ 还没跑到那一步(Actions → Rewrite To My Voice 手动跑)/ 旧 schema 没有 my_script 列(看 Analyze Posts 日志里给的那句 SQL) |
 
 ---
 

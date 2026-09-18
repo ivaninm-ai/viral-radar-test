@@ -1,6 +1,6 @@
 # 📡 爆款雷达 · 网页版(不用碰终端)
 
-每周自动抓竞对 IG 爆款 → 转录口播 → AI 拆解 → 生成可拖拽管理的 dashboard。
+每周自动抓竞对 IG 爆款 → 转录口播 → AI 拆解 → **改写成你自己语气的口播稿** → 生成可拖拽管理的 dashboard。
 
 **这个版本全程在网页上点鼠标就能装好,不用打任何指令。** 照下面 6 步走,约 20 分钟。
 
@@ -80,6 +80,8 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 | `SUPABASE_SERVICE_ROLE_KEY` | 第 3 步的 service_role key |
 | `APIFY_TOKEN` | Apify → Settings → API & Integrations 里的 token |
 
+> 可选第 5 个:`ANTHROPIC_API_KEY`(Claude 的 API key)。不加也能用——AI 拆解和「我的稿」默认走 GitHub 免费的 Models 额度;加了质量更好、不受每日免费额度限制。
+
 **再点 Variables 分页,New repository variable,加这 3 个:**
 
 | Variable 名字 | 值(例) |
@@ -117,15 +119,33 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 ## 装好之后
 
 - 📅 每周一自动更新(想改时间:编辑 `.github/workflows/sync.yml` 里的 cron 那行)
+- 🎬 每张卡片有 **我的稿** 按钮:AI 已经把这条爆款改写成**你的语气**的口播稿,点一下复制就能拍(怎么调语气见下面)
 - ➕ 加/停竞对:Supabase → Table Editor → `competitors` 表加一行(active 打勾)或取消勾
 - 🤖 系统每周自动推荐相关账号进 competitors(active 未勾),觉得好就勾
 - 💰 费用:只有 Apify ~$5/月,其余全免费
+
+## 🎬 我的稿:把爆款改写成你的口播稿(不用改代码)
+
+系统每周除了 AI 拆解,还会把每条爆款**按你的人设、语气、受众和红线**改写成一段 30-60 秒、可以直接对着镜头念的中文口播稿,放在卡片上绿色的「🎬 我的版本」里;点 **我的稿** 一键复制,点 **Brief** 也会一起带上。
+
+**第一次一定要做的:告诉 AI 你是谁。**
+
+1. 到**你的仓库**,打开 `brand_voice.md`,点右上角铅笔 ✏️(网页编辑就行)
+2. 把每一段的「示例」换成你自己的:人设、语气、受众痛点、敢公开说的承诺、红线。`##` 开头的标题别动
+3. 右上角 **Commit changes**
+4. 让 AI 用新语气**重刷**已经生成的稿子:Actions → 左边 **Rewrite To My Voice** → Run workflow → `rewrite_all` 填 `1` → 绿色 Run workflow。等几分钟,再去 Actions → **Deploy Dashboard** → Run workflow 刷网页
+
+之后每周新抓到的帖子会自动带上你语气的稿子,不用再管。以后想换语气就重复 1-4。
+
+> 💡 没改 `brand_voice.md` 之前,AI 会用一个通用的「示例人设」写,稿子能看但不像你——所以第一次务必改。
+> 💡 `NICHE` 变量决定 AI 拆解的方向,`brand_voice.md` 决定「我的稿」的语气,两个都设了效果最好。
 
 ## 卡住了
 
 | 现象 | 怎么办 |
 |---|---|
 | 网页 404 | 先等首跑完整结束;再看 Actions 里有没有红色失败的 workflow |
+| 卡片上没有「我的稿」按钮 | ① 这条帖子没有口播稿也没有像样的文案,AI 没材料改;② 首跑还没跑到这一步,等下周或去 Actions → **Rewrite To My Voice** 手动跑;③ 老学员用旧 `schema.sql` 建的表没有 `my_script` 这一列——看 Actions 里 Analyze Posts 的日志,它会告诉你要贴的那一句 SQL |
 | 抓到 0 条 | 打开 Actions → Sync Content 的日志,看那张**逐个账号的表格**:`抓到` 是 0 = 账号名拼错或 active 没勾;`抓到` 有数但 `入选` 是 0 = 门槛太严,照下面「内容太少怎么调」加 Variables |
 | 内容太少 | 见下面「内容太少怎么调」 |
 | AI 拆解空 | GitHub Models 每日免费额度用完,隔天自动补 |
