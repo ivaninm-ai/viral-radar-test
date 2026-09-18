@@ -7,10 +7,11 @@
 
 ---
 
-## 开始前:准备 3 个账号(建议课前先建好)
+## 开始前:准备 4 个账号(建议课前先建好)
 
 - GitHub(github.com)— 免费,存代码 + 每周自动运行
 - Supabase(supabase.com)— 免费,数据库。注册时选 Continue with GitHub 最快
+- Google AI Studio(aistudio.google.com)— 免费,用 Google 账号登录就行。给 AI 拆解 + 我的稿用的 Gemini 钥匙
 - Apify(apify.com)— 唯一收费,约 $5/月,负责抓 IG
 
 模板地址(老师会发给你):github.com/alvinokk/viral-radar-template
@@ -60,7 +61,9 @@ Project Settings → API,复制三样(先放记事本):
 
 你的仓库 → Settings → Secrets and variables → Actions。
 
-① 点 Secrets 分页,New repository secret,加这 4 个(名字一模一样):
+先去 Google AI Studio 拿第 5 把钥匙:aistudio.google.com → 用 Google 账号登录 → 左边 Get API key → Create API key → 复制那串 AIza 开头的(免费,不用绑卡)。
+
+① 点 Secrets 分页,New repository secret,加这 5 个(名字一模一样):
 
 | Name | 值 |
 |---|---|
@@ -68,8 +71,10 @@ Project Settings → API,复制三样(先放记事本):
 | SUPABASE_ANON_KEY | 第 3 步的 anon key |
 | SUPABASE_SERVICE_ROLE_KEY | 第 3 步的 service_role key |
 | APIFY_TOKEN | Apify → Settings → API 里的 token |
+| GEMINI_API_KEY | 上面 Google AI Studio 拿的那串 |
 
-(可选第 5 个:ANTHROPIC_API_KEY —— Claude 的 API key。不加也能用,AI 拆解和「我的稿」默认走 GitHub 免费额度;加了质量更好。)
+GEMINI_API_KEY 是 AI 拆解和「我的稿」用的。免费档每天有次数上限,这个系统一周只用一百来次,够用;用完了隔天自动补。
+(可选第 6 个:ANTHROPIC_API_KEY —— Claude 的 API key,付费。设了就优先用 Claude,质量更好;没设就用 Gemini。)
 
 ② 点 Variables 分页,New repository variable,加这 3 个:
 
@@ -138,6 +143,7 @@ Project Settings → API,复制三样(先放记事本):
 | 网页 404 | 先等首跑完整结束;再看 Actions 有没有红色失败的 |
 | 抓到 0 条 | competitors 表账号拼错 / active 没勾 |
 | 标题还是「爆款雷达」 | Variables 的 BRAND 没设,设好后重跑 Deploy Dashboard |
+| 有帖子但 AI 拆解是空的 | Secrets 没加 GEMINI_API_KEY(名字一模一样)/ 当天免费额度用完隔天自动补 / 看 Actions → Analyze Posts 日志第一行 [Provider] 和每条的 FAILED: HTTP 几 |
 | 卡片没有「我的稿」按钮 | 这条没材料(没口播稿也没像样文案)/ 还没跑到那一步(Actions → Rewrite To My Voice 手动跑)/ 旧 schema 没有 my_script 列(看 Analyze Posts 日志里给的那句 SQL) |
 
 ---

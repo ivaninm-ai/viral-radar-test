@@ -7,12 +7,12 @@ structured breakdown to the `ai_breakdown` column. Highest-scoring posts
 first so the free model budget goes to the best material; a
 permanently-rejected post is marked (HTTP 400) so the queue always moves on.
 
-Provider: GitHub Models (free, GITHUB_TOKEN with models:read) by default;
-Anthropic API when ANTHROPIC_API_KEY is set.
+Provider: Gemini (free tier, GEMINI_API_KEY from Google AI Studio) by default;
+Anthropic API when ANTHROPIC_API_KEY is set. (GitHub Models was retired on
+2026-07-30 and is no longer supported.)
 
-Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GITHUB_TOKEN
-     NICHE (default: 自媒体内容), GH_MODEL (openai/gpt-4o-mini),
-     POST_LIMIT (80)
+Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY | ANTHROPIC_API_KEY
+     NICHE (default: 自媒体内容), GEMINI_MODEL (gemini-2.5-flash), POST_LIMIT (80)
 """
 
 import json
@@ -25,7 +25,11 @@ import urllib.request
 
 SUPABASE_URL = (os.environ.get("SUPABASE_URL") or "").rstrip("/")
 NICHE = os.environ.get("NICHE", "自媒体内容")
-GH_MODEL = os.environ.get("GH_MODEL", "openai/gpt-4o-mini")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+# Google 会陆续下线旧的免费档模型(gemini-2.0-flash 已经没了)。
+# 遇到 404 就自动换下一个,不用改代码;想指定就设 GEMINI_MODEL 变量。
+GEMINI_FALLBACKS = ("gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash")
+_gemini_models = [GEMINI_MODEL] + [m for m in GEMINI_FALLBACKS if m != GEMINI_MODEL]
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
 POST_LIMIT = int(os.environ.get("POST_LIMIT", "80"))
 FAIL_MARK = "(拆解失败)"
@@ -86,15 +90,31 @@ def build_prompt(p):
     )
 
 
-def analyze_github(token, p):
-    resp = _request(
-        "https://models.github.ai/inference/chat/completions", "POST",
-        {"model": GH_MODEL, "max_tokens": 400,
-         "messages": [{"role": "system", "content": SYSTEM},
-                      {"role": "user", "content": build_prompt(p)}]},
-        {"Authorization": "Bearer " + token}, 90)
-    ch = resp.get("choices") or []
-    return (ch[0].get("message", {}).get("content") or "").strip() if ch else ""
+def analyze_gemini(key, p):
+    while True:
+        model = _gemini_models[0]
+        cfg = {"maxOutputTokens": 1200, "temperature": 0.6}
+        if model.startswith("gemini-2.5-flash"):
+            cfg["thinkingConfig"] = {"thinkingBudget": 0}  # 2.5 默认会"思考",会把输出额度吃光
+        try:
+            resp = _request(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                "POST",
+                {"system_instruction": {"parts": [{"text": SYSTEM}]},
+                 "contents": [{"role": "user", "parts": [{"text": build_prompt(p)}]}],
+                 "generationConfig": cfg},
+                {"x-goog-api-key": key}, 90)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404 and len(_gemini_models) > 1:
+                _gemini_models.pop(0)
+                print(f"  model {model} not found (retired?) -> switching to {_gemini_models[0]}")
+                continue
+            raise
+        cands = resp.get("candidates") or []
+        if not cands:
+            return ""
+        parts = (cands[0].get("content") or {}).get("parts") or []
+        return "".join(x.get("text", "") for x in parts if not x.get("thought")).strip()
 
 
 def analyze_anthropic(key, p):
@@ -117,15 +137,16 @@ def main():
         print("ERROR: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY required")
         sys.exit(1)
     anthropic_key = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
-    gh_token = (os.environ.get("GITHUB_TOKEN") or "").strip()
+    gemini_key = (os.environ.get("GEMINI_API_KEY") or "").strip()
     if anthropic_key:
         provider, delay = "anthropic", 0.5
         call = lambda p: analyze_anthropic(anthropic_key, p)
-    elif gh_token:
-        provider, delay = f"github-models ({GH_MODEL})", 4.5
-        call = lambda p: analyze_github(gh_token, p)
+    elif gemini_key:
+        provider, delay = "gemini", 6.5  # 免费档约 10 次/分钟,留点余量
+        call = lambda p: analyze_gemini(gemini_key, p)
     else:
-        print("No ANTHROPIC_API_KEY or GITHUB_TOKEN — skipping (non-fatal).")
+        print("No ANTHROPIC_API_KEY or GEMINI_API_KEY — skipping (non-fatal).")
+        print("到仓库 Settings → Secrets and variables → Actions 加 GEMINI_API_KEY(Google AI Studio 免费拿)。")
         return
     print(f"[Provider] {provider} | [Niche] {NICHE}")
 
@@ -155,6 +176,9 @@ def main():
                 except Exception:
                     pass
                 print(f"[{i}/{len(queue)}] @{who} REJECTED (marked)")
+            elif exc.code == 429:
+                print(f"[{i}/{len(queue)}] @{who} RATE LIMITED (wait 30s; leftovers next run)")
+                time.sleep(30)
             else:
                 print(f"[{i}/{len(queue)}] @{who} FAILED: HTTP {exc.code} (retry)")
         except Exception as exc:

@@ -6,10 +6,11 @@
 
 ---
 
-## 开始前:准备 3 个账号(建议课前先建好)
+## 开始前:准备 4 个账号(建议课前先建好)
 
 - **GitHub**(github.com)— 免费,存代码 + 每周自动运行
 - **Supabase**(supabase.com)— 免费,数据库。注册时选 *Continue with GitHub* 最快
+- **Google AI Studio**(aistudio.google.com)— 免费,用 Google 账号登录就行。给 AI 拆解 + 我的稿用的 Gemini 钥匙
 - **Apify**(apify.com)— 唯一收费,约 $5/月,负责抓 IG
 
 ---
@@ -71,7 +72,7 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 
 到**你的仓库** → **Settings** → 左边 **Secrets and variables** → **Actions**。
 
-**先点 Secrets 分页,New repository secret,加这 4 个**(名字要一模一样):
+**先点 Secrets 分页,New repository secret,加这 5 个**(名字要一模一样):
 
 | Secret 名字 | 值 |
 |---|---|
@@ -79,8 +80,11 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 | `SUPABASE_ANON_KEY` | 第 3 步的 anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | 第 3 步的 service_role key |
 | `APIFY_TOKEN` | Apify → Settings → API & Integrations 里的 token |
+| `GEMINI_API_KEY` | aistudio.google.com → 左边 **Get API key** → **Create API key** → 复制(`AIza` 开头,免费) |
 
-> 可选第 5 个:`ANTHROPIC_API_KEY`(Claude 的 API key)。不加也能用——AI 拆解和「我的稿」默认走 GitHub 免费的 Models 额度;加了质量更好、不受每日免费额度限制。
+> `GEMINI_API_KEY` 是 AI 拆解和「我的稿」用的。免费档每天有次数上限,这个系统一周只用一百来次,够用;用完了隔天自动补。
+>
+> 可选第 6 个:`ANTHROPIC_API_KEY`(Claude 的 API key,付费)。设了就优先用 Claude,质量更好、不受免费额度限制;没设就用 Gemini。
 
 **再点 Variables 分页,New repository variable,加这 3 个:**
 
@@ -138,6 +142,7 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 之后每周新抓到的帖子会自动带上你语气的稿子,不用再管。以后想换语气就重复 1-4。
 
 > 💡 没改 `brand_voice.md` 之前,AI 会用一个通用的「示例人设」写,稿子能看但不像你——所以第一次务必改。
+> 💡 用的是第 4 步那把免费的 `GEMINI_API_KEY`;有 Claude key 的加 `ANTHROPIC_API_KEY` 会优先用 Claude,稿子更像人话。
 > 💡 `NICHE` 变量决定 AI 拆解的方向,`brand_voice.md` 决定「我的稿」的语气,两个都设了效果最好。
 
 ## 卡住了
@@ -145,10 +150,10 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 | 现象 | 怎么办 |
 |---|---|
 | 网页 404 | 先等首跑完整结束;再看 Actions 里有没有红色失败的 workflow |
-| 卡片上没有「我的稿」按钮 | ① 这条帖子没有口播稿也没有像样的文案,AI 没材料改;② 首跑还没跑到这一步,等下周或去 Actions → **Rewrite To My Voice** 手动跑;③ 老学员用旧 `schema.sql` 建的表没有 `my_script` 这一列——看 Actions 里 Analyze Posts 的日志,它会告诉你要贴的那一句 SQL |
+| 卡片上没有「我的稿」按钮(但有 AI 拆解) | ① 这条帖子没有口播稿也没有像样的文案,AI 没材料改;② 首跑还没跑到这一步,等下周或去 Actions → **Rewrite To My Voice** 手动跑;③ 老学员用旧 `schema.sql` 建的表没有 `my_script` 这一列——看 Actions 里 Analyze Posts 的日志,它会告诉你要贴的那一句 SQL |
 | 抓到 0 条 | 打开 Actions → Sync Content 的日志,看那张**逐个账号的表格**:`抓到` 是 0 = 账号名拼错或 active 没勾;`抓到` 有数但 `入选` 是 0 = 门槛太严,照下面「内容太少怎么调」加 Variables |
 | 内容太少 | 见下面「内容太少怎么调」 |
-| AI 拆解空 | GitHub Models 每日免费额度用完,隔天自动补 |
+| AI 拆解空 / 没有「我的稿」 | ① Secrets 里没加 `GEMINI_API_KEY`(名字要一模一样);② Gemini 免费额度当天用完,隔天自动补;③ 看 Actions → **Analyze Posts** 的日志:第一行 `[Provider]` 是不是 gemini,每条后面 `FAILED: HTTP` 几 |
 | 网页标题还是「爆款雷达」 | Variables 里的 `BRAND` 没设或拼错,设好后 Actions 里重跑 Deploy Dashboard |
 
 ## 内容太少怎么调(不用改代码)

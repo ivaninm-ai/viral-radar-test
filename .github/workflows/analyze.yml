@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  models: read
   contents: read
 
 jobs:
@@ -23,8 +22,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # 可选,没设就用免费的 GitHub Models
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}         # 免费:Google AI Studio 拿
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # 可选,设了就优先用 Claude
           NICHE: ${{ vars.NICHE }}
         run: python analyze_posts.py
       # 「我的稿」:按 brand_voice.md 把新帖改写成自己语气的口播稿。
@@ -34,7 +33,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NICHE: ${{ vars.NICHE }}
         run: python rewrite_posts.py
