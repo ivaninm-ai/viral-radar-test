@@ -16,6 +16,7 @@ create table if not exists posts (
   caption         text,
   transcript      text,                            -- 视频口播稿(自动转录)
   ai_breakdown    text,                            -- AI 拆解(自动生成)
+  my_script       text,                            -- 我的改写口播稿(AI 按 brand_voice.md 改写,可直接拍)
   post_type       text,
   likes           integer default 0,
   comments        integer default 0,
@@ -64,6 +65,9 @@ delete from competitors a
 -- 以后插不进重复的了
 create unique index if not exists competitors_username_uniq
     on competitors (lower(username), tracker);
+
+-- 老版本升级:补上「我的稿」这一列(新装的已经有了,重跑没副作用)
+alter table posts add column if not exists my_script text;
 
 -- status 白名单:公开 key 能改这一列,不锁死的话任何人可以往里塞任意长文本
 update posts set status = '未处理'
