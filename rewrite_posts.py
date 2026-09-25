@@ -72,7 +72,7 @@ def build_system():
         "1. 保留原爆款的钩子和结构节奏(只借结构,不抄原文字句)\n"
         "2. 把话题、案例、场景换成【人设与规矩】里的受众痛点\n"
         "3. 全程用【人设与规矩】的语气,红线一条都不能碰\n"
-        "4. 长度约 30-60 秒口播,开头第一句就是强钩子,结尾一句软性行动指引\n"
+        "4. 长度、结构和结尾照【人设与规矩】里的要求;那里没写的话,约 30-60 秒口播,开头第一句就是强钩子,结尾一句软性行动指引\n"
         "5. 直接输出脚本正文本身,不要任何解释、标题、前后缀,不要写「以下是」或「脚本:」\n\n"
         f"【人设与规矩】(所在领域:{NICHE})\n" + load_brand()
     )
@@ -167,7 +167,7 @@ def rewrite_gemini(key, p):
 def rewrite_anthropic(key, p):
     resp = _request(
         "https://api.anthropic.com/v1/messages", "POST",
-        {"model": CLAUDE_MODEL, "max_tokens": 700, "system": SYSTEM,
+        {"model": CLAUDE_MODEL, "max_tokens": 2000, "system": SYSTEM,
          "messages": [{"role": "user", "content": build_prompt(p)}]},
         {"x-api-key": key, "anthropic-version": "2023-06-01"}, 90)
     parts = resp.get("content") or []
