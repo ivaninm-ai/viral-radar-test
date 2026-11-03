@@ -58,13 +58,13 @@
 
 ## 第 3 步 · 复制 3 把 Supabase 钥匙
 
-Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
+Supabase 左下角 **Settings → API Keys**,复制三样(先放记事本):
 
 | 名字 | 长这样 |
 |---|---|
 | Project URL | `https://xxxx.supabase.co` |
-| `anon` `public` key | 一长串 |
-| `service_role` key | 一长串(**私密**,只进下一步的 Secrets) |
+| **Publishable key** | `sb_publishable_` 开头 |
+| **Secret key** | `sb_secret_` 开头(**私密**,只进下一步的 Secrets)|
 
 ---
 
@@ -77,8 +77,8 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 | Secret 名字 | 值 |
 |---|---|
 | `SUPABASE_URL` | 第 3 步的 Project URL |
-| `SUPABASE_ANON_KEY` | 第 3 步的 anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | 第 3 步的 service_role key |
+| `SUPABASE_ANON_KEY` | 第 3 步的 **publishable key**(变量名没改)|
+| `SUPABASE_SERVICE_ROLE_KEY` | 第 3 步的 **secret key**(变量名没改)|
 | `APIFY_TOKEN` | Apify → Settings → API & Integrations 里的 token |
 | `GEMINI_API_KEY` | aistudio.google.com → 左边 **Get API key** → **Create API key** → 复制(`AIza` 开头,免费) |
 
@@ -126,7 +126,7 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 - 🎬 每张卡片有 **我的稿** 按钮:AI 已经把这条爆款改写成**你的语气**的口播稿,点一下复制就能拍(怎么调语气见下面)
 - ➕ 加/停竞对:Supabase → Table Editor → `competitors` 表加一行(active 打勾)或取消勾
 - 🤖 系统每周自动推荐相关账号进 competitors(active 未勾),觉得好就勾
-- 💰 费用:只有 Apify ~$5/月,其余全免费
+- 💰 费用:Apify 免费方案每月自带 $5 额度(不用绑卡),7 个竞对实测约 $1.1/月,一般用不完
 
 ## 🎬 我的稿:把爆款改写成你的口播稿(不用改代码)
 
@@ -134,14 +134,14 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 
 **第一次一定要做的:告诉 AI 你是谁。**
 
-1. 到**你的仓库**,打开 `brand_voice.md`,点右上角铅笔 ✏️(网页编辑就行)
-2. 把每一段换成你自己的:人设、语气、受众痛点、敢公开说的承诺、红线(`<!-- -->` 里是给你看的示例,AI 看不到)。`##` 开头的标题别动
-3. 右上角 **Commit changes**
+1. 回到安装页第 6 步,把上一堂课的 `voice-guide.md` 和 `business-context.md` 放进去,下载拼好的 `brand_voice.md`
+2. 到**你的仓库**首页 → **Add file** → **Upload files**,把 `brand_voice.md` 拖进去
+3. 点绿色 **Commit changes**
 4. 让 AI 用新语气**重刷**已经生成的稿子:Actions → 左边 **Rewrite To My Voice** → Run workflow → `rewrite_all` 填 `1` → 绿色 Run workflow。等几分钟,再去 Actions → **Deploy Dashboard** → Run workflow 刷网页
 
 之后每周新抓到的帖子会自动带上你语气的稿子,不用再管。以后想换语气就重复 1-4。
 
-> 💡 没改 `brand_voice.md` 之前,AI 会按你 Variables 里的 `NICHE` 套一个通用人设写——稿子能用,但不像你,所以第一次务必改。
+> 💡 仓库里还没有 `brand_voice.md` 之前,AI 会按你 Variables 里的 `NICHE` 套一个通用人设写——稿子能用,但不像你,所以第一次务必做。
 > 💡 用的是第 4 步那把免费的 `GEMINI_API_KEY`;有 Claude key 的加 `ANTHROPIC_API_KEY` 会优先用 Claude,稿子更像人话。
 > 💡 `NICHE` 变量决定 AI 拆解的方向,`brand_voice.md` 决定「我的稿」的语气,两个都设了效果最好。
 
@@ -191,6 +191,6 @@ Supabase 左下角 **Project Settings → API**,复制三样(先放记事本):
 
 ## 三条红线
 
-1. `service_role` key 只进 Secrets,不要贴到别处或发群里
+1. **secret key**(`sb_secret_` 开头)只进 Secrets,不要贴到别处或发群里
 2. 仓库是 Public——竞对数据和 AI 拆解任何人拿到链接都能看到,介意就别用免费版
 3. `schema.sql` 里的安全锁那段不要删

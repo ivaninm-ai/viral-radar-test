@@ -105,7 +105,7 @@ def _request(url, method="GET", data=None, headers=None, timeout=60):
 
 def sb(path, method="GET", data=None, prefer=None):
     key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-    headers = {"apikey": key, "Authorization": "Bearer " + key}
+    headers = {"apikey": key}  # new-style keys are not JWTs: apikey header only
     if prefer:
         headers["Prefer"] = prefer
     return _request(f"{SUPABASE_URL}/rest/v1/{path}", method, data, headers, 60)

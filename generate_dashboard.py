@@ -51,7 +51,7 @@ def fetch_posts(key):
     while True:
         url = f"{SUPABASE_URL}/rest/v1/posts?select=*&order=viral_score.desc.nullslast"
         req = urllib.request.Request(url, headers={
-            "apikey": key, "Authorization": "Bearer " + key,
+            "apikey": key,
             "Range-Unit": "items", "Range": f"{offset}-{offset+page-1}",
         })
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -462,7 +462,7 @@ async function setStatus(d, val) {
   try {
     const r = await fetch(SUPA + '/rest/v1/posts?post_id=eq.' + encodeURIComponent(d.id), {
       method: 'PATCH',
-      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      headers: { 'apikey': ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
       body: JSON.stringify({ status: val })
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -593,7 +593,7 @@ async function refreshStatuses() {
   localStorage.setItem('st_ts', String(Date.now()));
   const fresh = {};
   try {
-    const r = await fetch(SUPA + '/rest/v1/posts?select=post_id,status', { headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON } });
+    const r = await fetch(SUPA + '/rest/v1/posts?select=post_id,status', { headers: { 'apikey': ANON } });
     if (!r.ok) return;
     (await r.json()).forEach(row => {
       const d = byRec[row.post_id];
@@ -987,7 +987,7 @@ async function setStatus(d, val) {
   try {
     const r = await fetch(SUPA + '/rest/v1/posts?post_id=eq.' + encodeURIComponent(d.id), {
       method: 'PATCH',
-      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      headers: { 'apikey': ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
       body: JSON.stringify({ status: val })
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1070,7 +1070,7 @@ async function refreshStatuses() {
   localStorage.setItem('st_ts', String(Date.now()));
   const fresh = {};
   try {
-    const r = await fetch(SUPA + '/rest/v1/posts?select=post_id,status', { headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON } });
+    const r = await fetch(SUPA + '/rest/v1/posts?select=post_id,status', { headers: { 'apikey': ANON } });
     if (!r.ok) return;
     (await r.json()).forEach(row => {
       const d = byRec[row.post_id];

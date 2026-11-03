@@ -34,7 +34,7 @@ MAX_CHARS = 5000
 
 def sb(path, method="GET", data=None, prefer=None):
     key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-    headers = {"apikey": key, "Authorization": "Bearer " + key}
+    headers = {"apikey": key}  # new-style keys are not JWTs: apikey header only
     if prefer:
         headers["Prefer"] = prefer
     body = json.dumps(data).encode() if data is not None else None
