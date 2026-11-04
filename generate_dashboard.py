@@ -63,6 +63,42 @@ def fetch_posts(key):
     return rows
 
 
+def _handle(name):
+    """Normalise a competitor handle the way sync_content.py does, so the two
+    scripts always agree on what '@Nike' and 'instagram.com/nike/' mean."""
+    n = (name or "").strip()
+    if "instagram.com" in n:
+        parts = [p for p in urllib.parse.urlparse(n).path.split("/") if p]
+        if not parts or parts[0] in ("p", "reel", "reels", "stories", "tv"):
+            return ""
+        n = parts[0]
+    return n.lstrip("@").strip().lower()
+
+
+def fetch_active_handles(key):
+    """Handles ticked `active` in the competitors table.
+
+    Returns None when the table cannot be read or is empty. The caller then
+    skips filtering, so a key problem or an older schema still builds the full
+    dashboard instead of an empty one.
+    """
+    url = f"{SUPABASE_URL}/rest/v1/competitors?select=username,active"
+    req = urllib.request.Request(url, headers={"apikey": key})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            rows = json.loads(resp.read())
+    except Exception as exc:
+        print(f"  WARNING: cannot read the competitors table ({exc}) - "
+              "showing every account that has posts")
+        return None
+    if not rows:
+        print("  WARNING: the competitors table is empty - "
+              "showing every account that has posts")
+        return None
+    return {h for h in (_handle(r.get("username"))
+                        for r in rows if r.get("active")) if h}
+
+
 def normalize(r):
     post_id = str(r.get("post_id") or "").strip()
     if not post_id:
@@ -1116,6 +1152,23 @@ def main():
         if p["id"] not in seen:
             seen.add(p["id"])
             unique.append(p)
+
+    # Only accounts still ticked `active` belong on the board. Unticking one in
+    # Supabase hides it here; its rows stay in the table, so ticking it back
+    # later brings the whole history with it.
+    active = fetch_active_handles(svc)
+    if active is not None:
+        kept = [p for p in unique if _handle(p["competitor"]) in active]
+        dropped = sorted({p["competitor"] for p in unique
+                          if _handle(p["competitor"]) not in active})
+        if kept:
+            if dropped:
+                print("  hidden (active not ticked): " + ", ".join(dropped))
+            print(f"  {len(unique)} -> {len(kept)} posts after the active filter")
+            unique = kept
+        elif unique:
+            print("  WARNING: that would hide every post - skipping the active "
+                  "filter. Check the usernames in the competitors table.")
 
     # outlier multiplier: post score vs the account's own median score
     import statistics
