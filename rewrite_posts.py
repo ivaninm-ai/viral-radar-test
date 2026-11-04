@@ -29,7 +29,7 @@ import urllib.parse
 import urllib.request
 
 SUPABASE_URL = (os.environ.get("SUPABASE_URL") or "").rstrip("/")
-NICHE = os.environ.get("NICHE", "自媒体内容")
+NICHE = os.environ.get("NICHE") or "自媒体内容"
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 # Google 会陆续下线旧的免费档模型(gemini-2.0-flash 已经没了)。
 # 遇到 404 就自动换下一个,不用改代码;想指定就设 GEMINI_MODEL 变量。

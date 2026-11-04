@@ -25,8 +25,8 @@ SUPABASE_URL = (os.environ.get("SUPABASE_URL") or "").rstrip("/")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")  # public key, baked into the page
 # Set on GitHub → Settings → Secrets and variables → Actions → Variables.
 # Falls back to sensible defaults so the page still builds before they're set.
-BRAND = os.environ.get("BRAND", "爆款雷达")
-SYNC_DAY = os.environ.get("SYNC_DAY", "每周")
+BRAND = os.environ.get("BRAND") or "爆款雷达"
+SYNC_DAY = os.environ.get("SYNC_DAY") or "每周"
 TRACKER_LABEL = {"IG": BRAND + " 竞对"}
 STATUSES = ["未处理", "拍摄中", "已处理", "跳过"]
 
